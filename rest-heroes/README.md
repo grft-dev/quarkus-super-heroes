@@ -4,18 +4,22 @@
 
 ## Introduction
 
-This is the Hero REST API microservice. It is a reactive HTTP microservice exposing CRUD operations on Heroes. Hero information is stored in a PostgreSQL database. This service is implemented using [RESTEasy Reactive](https://quarkus.io/guides/resteasy-reactive) with reactive endpoints and [Quarkus Hibernate Reactive with Panache's repository pattern](https://quarkus.io/guides/hibernate-reactive-panache#solution-2-using-the-repository-pattern).
+Heroes data lives in PostgreSQL. **Callable integration** for other services is through **Graftcode** — `HeroesGraftFacade` (`io.quarkus.sample.superheroes.hero.graft`), not a public REST CRUD API.
 
-This service uses a **contract-first** approach: the REST API interface is generated at build time from the OpenAPI specification ([`src/main/resources/openapi/openapi.yml`](src/main/resources/openapi/openapi.yml)) using the [Quarkiverse OpenAPI Generator Server extension](https://docs.quarkiverse.io/quarkus-openapi-generator/dev/server.html).
-
-Additionally, this application favors constructor injection of beans over field injection (i.e. `@Inject` annotation).
+HTTP on port `8083` is for **operations only** (health, metrics, Dev UI in dev mode).
 
 ![rest-heroes](images/rest-heroes.png)
 
 ## Running the Application
 
-The application runs on port `8083` (defined by `quarkus.http.port` in [`application.yml`](src/main/resources/application.yml)).
+From `quarkus-super-heroes/rest-heroes`, run `./mvnw quarkus:dev`. Health: http://localhost:8083/q/health
 
-From the `quarkus-super-heroes/rest-heroes` directory, simply run `./mvnw quarkus:dev` to run [Quarkus Dev Mode](https://quarkus.io/guides/maven-tooling#dev-mode). The application will be exposed at http://localhost:8083 and the [Quarkus Dev UI](https://quarkus.io/guides/dev-ui) will be exposed at http://localhost:8083/q/dev.
+Outside dev mode you need PostgreSQL (see `application.yml` for defaults).
 
-![heroes-ui](images/heroes-ui.png)
+## Graft receiver (local smoke)
+
+To run Quarkus with **Grafting Gateway** (WebSocket `ws://…/ws`, Vision `/GV`), build the app and use [`deploy/graft-smoke/`](deploy/graft-smoke/README.md).
+
+## Running Locally (full stack)
+
+See the [Running Locally](https://quarkus.io/quarkus-super-heroes/running-locally) guide. `rest-fights` reaches heroes via `FIGHT_HEROES_GRAFT_HOST` (default in compose/k8s: `ws://rest-heroes:80/ws`).

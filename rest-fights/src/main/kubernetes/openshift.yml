@@ -15,10 +15,6 @@ data:
   quarkus.stork.villain-service.service-discovery.address-list: rest-villains:80
   quarkus.stork.narration-service.service-discovery.type: static
   quarkus.stork.narration-service.service-discovery.address-list: rest-narration:80
-#  quarkus.stork.hero-service.service-discovery.type: kubernetes
-  #  quarkus.stork.hero-service.service-discovery.application: rest-heroes
-#  quarkus.stork.hero-service.service-discovery.refresh-period: 1H
-#  quarkus.stork.hero-service.service-discovery.port-name: http
 #  quarkus.stork.villain-service.service-discovery.type: kubernetes
 #  quarkus.stork.villain-service.service-discovery.application: rest-villains
 #  quarkus.stork.villain-service.service-discovery.refresh-period: 1H

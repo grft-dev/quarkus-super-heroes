@@ -2,6 +2,8 @@
 
 Manual end-to-end check: **GG publish → Vision → invoke** (npm caller optional).
 
+The same `Dockerfile` is used by **full-stack Docker Compose** (`rest-heroes/src/main/docker-compose/*.yml` and root `deploy/docker-compose/*`) so `rest-fights` can reach `ws://rest-heroes:80/ws`. Run `mvn package` before `docker compose build`.
+
 ## Prerequisites
 
 - Java **25** (`$env:JAVA_HOME` → Temurin 25)
