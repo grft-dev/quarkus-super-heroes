@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.quarkus.sample.superheroes</groupId>
+  <artifactId>heroes-graft-smoke-caller</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <properties>
+    <maven.compiler.release>25</maven.compiler.release>
+  </properties>
+  <repositories>
+    <repository>
+      <id>graft-virtual</id>
+      <url>https://d.grft.dev/maven2/ac5f7173-f71c-4ae2-ad05-65f1bed54db6__free</url>
+    </repository>
+  </repositories>
+  <dependencies>
+    <!-- Replace artifactId/version from docker logs heroes-gg (Maven section) -->
+    <dependency>
+      <groupId>graft.maven.io.quarkus.sample</groupId>
+      <artifactId>artifactid_rest-heroes_ri5cld</artifactId>
+      <version>1.0</version>
+    </dependency>
+  </dependencies>
+</project>

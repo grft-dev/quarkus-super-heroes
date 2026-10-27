@@ -8,25 +8,27 @@ import jakarta.validation.constraints.Size;
  */
 public class HeroPatchDto {
 
-  private Long id;
+  /** {@code 0} means unset; use {@code int} per Graftcode portable baseline. */
+  private int id;
 
   @Size(min = 3, max = 50)
   private String name;
 
   private String otherName;
 
+  /** {@code 0} means omit level from the patch. */
   @Positive
-  private Integer level;
+  private int level;
 
   private String picture;
 
   private String powers;
 
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
-  public HeroPatchDto setId(Long id) {
+  public HeroPatchDto setId(int id) {
     this.id = id;
     return this;
   }
@@ -49,11 +51,11 @@ public class HeroPatchDto {
     return this;
   }
 
-  public Integer getLevel() {
+  public int getLevel() {
     return level;
   }
 
-  public HeroPatchDto setLevel(Integer level) {
+  public HeroPatchDto setLevel(int level) {
     this.level = level;
     return this;
   }

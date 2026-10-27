@@ -15,7 +15,8 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 class HeroMapperTests {
-  private static final Long DEFAULT_ID = 1L;
+  private static final int DTO_ID = 1;
+  private static final Long ENTITY_ID = 1L;
   private static final String DEFAULT_NAME = "Luke Skywalker";
   private static final String DEFAULT_OTHER_NAME = "Jedi Knight";
   private static final String DEFAULT_PICTURE = "luke-skywalker.jpg";
@@ -33,7 +34,7 @@ class HeroMapperTests {
     assertThat(dto)
       .isNotNull()
       .extracting(HeroDto::getId, HeroDto::getName, HeroDto::getOtherName, HeroDto::getLevel, HeroDto::getPicture, HeroDto::getPowers)
-      .containsExactly(DEFAULT_ID, DEFAULT_NAME, DEFAULT_OTHER_NAME, DEFAULT_LEVEL, DEFAULT_PICTURE, DEFAULT_POWERS);
+      .containsExactly(DTO_ID, DEFAULT_NAME, DEFAULT_OTHER_NAME, DEFAULT_LEVEL, DEFAULT_PICTURE, DEFAULT_POWERS);
   }
 
   @Test
@@ -51,13 +52,13 @@ class HeroMapperTests {
       .isNotNull()
       .singleElement()
       .extracting(HeroDto::getId, HeroDto::getName, HeroDto::getLevel)
-      .containsExactly(DEFAULT_ID, DEFAULT_NAME, DEFAULT_LEVEL);
+      .containsExactly(DTO_ID, DEFAULT_NAME, DEFAULT_LEVEL);
   }
 
   @Test
   void toEntity() {
     var dto = new HeroDto()
-      .setId(DEFAULT_ID)
+      .setId(DTO_ID)
       .setName(DEFAULT_NAME)
       .setOtherName(DEFAULT_OTHER_NAME)
       .setLevel(DEFAULT_LEVEL)
@@ -69,7 +70,7 @@ class HeroMapperTests {
     assertThat(entity)
       .isNotNull()
       .extracting(Hero::getId, Hero::getName, Hero::getOtherName, Hero::getLevel, Hero::getPicture, Hero::getPowers)
-      .containsExactly(DEFAULT_ID, DEFAULT_NAME, DEFAULT_OTHER_NAME, DEFAULT_LEVEL, DEFAULT_PICTURE, DEFAULT_POWERS);
+      .containsExactly(ENTITY_ID, DEFAULT_NAME, DEFAULT_OTHER_NAME, DEFAULT_LEVEL, DEFAULT_PICTURE, DEFAULT_POWERS);
   }
 
   @Test
@@ -82,7 +83,7 @@ class HeroMapperTests {
   void toEntityList() {
     var dtos = List.of(
       new HeroDto()
-        .setId(DEFAULT_ID)
+        .setId(DTO_ID)
         .setName(DEFAULT_NAME)
         .setLevel(DEFAULT_LEVEL)
     );
@@ -93,13 +94,13 @@ class HeroMapperTests {
       .isNotNull()
       .singleElement()
       .extracting(Hero::getId, Hero::getName, Hero::getLevel)
-      .containsExactly(DEFAULT_ID, DEFAULT_NAME, DEFAULT_LEVEL);
+      .containsExactly(ENTITY_ID, DEFAULT_NAME, DEFAULT_LEVEL);
   }
 
   @Test
   void toEntityFromPatch() {
     var patch = new HeroPatchDto()
-      .setId(DEFAULT_ID)
+      .setId(DTO_ID)
       .setName(DEFAULT_NAME)
       .setOtherName(DEFAULT_OTHER_NAME)
       .setLevel(DEFAULT_LEVEL)
@@ -111,7 +112,7 @@ class HeroMapperTests {
     assertThat(entity)
       .isNotNull()
       .extracting(Hero::getId, Hero::getName, Hero::getOtherName, Hero::getLevel, Hero::getPicture, Hero::getPowers)
-      .containsExactly(DEFAULT_ID, DEFAULT_NAME, DEFAULT_OTHER_NAME, DEFAULT_LEVEL, DEFAULT_PICTURE, DEFAULT_POWERS);
+      .containsExactly(ENTITY_ID, DEFAULT_NAME, DEFAULT_OTHER_NAME, DEFAULT_LEVEL, DEFAULT_PICTURE, DEFAULT_POWERS);
   }
 
   @Test
@@ -122,7 +123,7 @@ class HeroMapperTests {
 
   private Hero createEntity() {
     var hero = new Hero();
-    hero.setId(DEFAULT_ID);
+    hero.setId(ENTITY_ID);
     hero.setName(DEFAULT_NAME);
     hero.setOtherName(DEFAULT_OTHER_NAME);
     hero.setLevel(DEFAULT_LEVEL);

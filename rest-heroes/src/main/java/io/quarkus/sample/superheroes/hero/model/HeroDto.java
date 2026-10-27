@@ -9,7 +9,8 @@ import jakarta.validation.constraints.Size;
  */
 public class HeroDto {
 
-  private Long id;
+  /** {@code 0} means unset (e.g. on create); use {@code int} per Graftcode portable baseline. */
+  private int id;
 
   @NotNull
   @Size(min = 3, max = 50)
@@ -17,19 +18,18 @@ public class HeroDto {
 
   private String otherName;
 
-  @NotNull
   @Positive
-  private Integer level;
+  private int level;
 
   private String picture;
 
   private String powers;
 
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
-  public HeroDto setId(Long id) {
+  public HeroDto setId(int id) {
     this.id = id;
     return this;
   }
@@ -52,11 +52,11 @@ public class HeroDto {
     return this;
   }
 
-  public Integer getLevel() {
+  public int getLevel() {
     return level;
   }
 
-  public HeroDto setLevel(Integer level) {
+  public HeroDto setLevel(int level) {
     this.level = level;
     return this;
   }

@@ -1,44 +1,30 @@
 package io.quarkus.sample.superheroes.hero.graft;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import java.lang.reflect.Method;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 import io.quarkus.sample.superheroes.hero.model.HeroDto;
 import io.quarkus.sample.superheroes.hero.model.HeroPatchDto;
-import io.quarkus.sample.superheroes.hero.service.HeroService;
-import io.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle;
-
-import io.smallrye.mutiny.Uni;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.mutiny.core.Vertx;
 
 /**
  * Intentional Graftcode callable surface for hero operations (sync POJOs, no HTTP or reactive types).
+ * Public types follow the portable baseline: primitives, {@code String}, plain models, and homogeneous arrays —
+ * no {@code java.util.Optional} or {@code java.util.List} on this surface (Vision/GMA flags them unsupported).
  */
 @ApplicationScoped
 public class HeroesGraftFacade {
 
-  private final HeroService heroService;
-  private final Vertx vertx;
-
-  public HeroesGraftFacade(HeroService heroService, Vertx vertx) {
-    this.heroService = heroService;
-    this.vertx = vertx;
-  }
+  private static final String EXECUTOR = "io.quarkus.sample.superheroes.hero.graft.HeroesGraftExecutor";
 
   /** Ping hello (same text as former {@code GET /api/heroes/hello}). */
   public String hello() {
-    return HeroService.HELLO_MESSAGE;
+    return "Hello Hero Resource";
   }
 
-  /** Returns a random hero, or empty if the database has no heroes. */
-  public Optional<HeroDto> getRandomHero() {
-    return awaitOnVertx(() -> heroService.findRandomHeroApi());
+  /** Returns a random hero, or {@code null} if the database has no heroes. */
+  public HeroDto getRandomHero() {
+    return (HeroDto) invoke("getRandomHero");
   }
 
   /**
@@ -46,18 +32,18 @@ public class HeroesGraftFacade {
    *
    * @param nameFilter optional filter; {@code null} returns all heroes
    */
-  public List<HeroDto> getAllHeroes(String nameFilter) {
-    return awaitOnVertx(() -> heroService.listHeroes(nameFilter));
+  public HeroDto[] getAllHeroes(String nameFilter) {
+    return (HeroDto[]) invoke("getAllHeroes", nameFilter);
   }
 
-  /** Returns a hero by id, or empty if not found. */
-  public Optional<HeroDto> getHero(Long id) {
-    return awaitOnVertx(() -> heroService.findHeroApiById(id));
+  /** Returns a hero by id, or {@code null} if not found. */
+  public HeroDto getHero(int id) {
+    return (HeroDto) invoke("getHero", id);
   }
 
   /** Persists a new hero and returns its generated id. */
-  public Long createHero(HeroDto hero) {
-    return awaitOnVertx(() -> heroService.createHero(hero)).getId();
+  public int createHero(HeroDto hero) {
+    return (Integer) invoke("createHero", hero);
   }
 
   /**
@@ -65,50 +51,58 @@ public class HeroesGraftFacade {
    *
    * @return {@code true} if the hero existed and was updated, {@code false} if not found
    */
-  public boolean replaceHero(Long id, HeroDto hero) {
-    return awaitOnVertx(() -> heroService.replaceHero(id, hero));
+  public boolean replaceHero(int id, HeroDto hero) {
+    return (Boolean) invoke("replaceHero", id, hero);
   }
 
   /**
    * Partially updates a hero.
    *
-   * @return the updated hero, or empty if not found
+   * @return the updated hero, or {@code null} if not found
    */
-  public Optional<HeroDto> partialUpdateHero(Long id, HeroPatchDto patch) {
-    return awaitOnVertx(() -> heroService.partialUpdateHero(id, patch));
+  public HeroDto partialUpdateHero(int id, HeroPatchDto patch) {
+    return (HeroDto) invoke("partialUpdateHero", id, patch);
   }
 
   /** Deletes a hero by id (no-op if id does not exist). */
-  public void deleteHero(Long id) {
-    awaitOnVertx(() -> heroService.deleteHero(id));
+  public void deleteHero(int id) {
+    invoke("deleteHero", id);
   }
 
   /** Deletes all heroes. */
   public void deleteAllHeroes() {
-    awaitOnVertx(() -> heroService.deleteAllHeroes());
+    invoke("deleteAllHeroes");
   }
 
-  /** Replaces the entire hero table with the given list. */
-  public void replaceAllHeroes(List<HeroDto> heroes) {
-    awaitOnVertx(() -> heroService.replaceAllHeroesFromDtos(heroes));
+  /** Replaces the entire hero table with the given heroes. */
+  public void replaceAllHeroes(HeroDto[] heroes) {
+    invoke("replaceAllHeroes", (Object) heroes);
   }
 
-  private <T> T awaitOnVertx(Supplier<Uni<T>> uniSupplier) {
-    var result = new CompletableFuture<T>();
-    var duplicated = ((ContextInternal) vertx.getDelegate().getOrCreateContext()).duplicate();
-    duplicated.runOnContext(v -> {
-      VertxContextSafetyToggle.setCurrentContextSafe(true);
-      uniSupplier.get().subscribe().with(result::complete, result::completeExceptionally);
-    });
-
+  private static Object invoke(String method, Object... args) {
     try {
-      return result.get(2, TimeUnit.MINUTES);
-    } catch (Exception e) {
+      Class<?> executor = Class.forName(EXECUTOR);
+      Method target = executor.getDeclaredMethod(method, parameterTypes(method, args));
+      return target.invoke(null, args);
+    } catch (ReflectiveOperationException e) {
       var cause = e.getCause() != null ? e.getCause() : e;
       if (cause instanceof RuntimeException runtimeException) {
         throw runtimeException;
       }
       throw new IllegalStateException(cause);
     }
+  }
+
+  private static Class<?>[] parameterTypes(String method, Object[] args) throws NoSuchMethodException {
+    return switch (method) {
+      case "getAllHeroes" -> new Class<?>[] {String.class};
+      case "getHero", "deleteHero" -> new Class<?>[] {int.class};
+      case "createHero" -> new Class<?>[] {HeroDto.class};
+      case "replaceHero" -> new Class<?>[] {int.class, HeroDto.class};
+      case "partialUpdateHero" -> new Class<?>[] {int.class, HeroPatchDto.class};
+      case "replaceAllHeroes" -> new Class<?>[] {HeroDto[].class};
+      case "getRandomHero", "deleteAllHeroes" -> new Class<?>[0];
+      default -> throw new NoSuchMethodException(method);
+    };
   }
 }

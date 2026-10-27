@@ -1,0 +1,13 @@
+{
+  "graftOnlyGuid": "99c589f8-4147-4a90-9bb7-563c161280f2",
+  "runtimeGuid": "58103a97-de82-489c-ac39-ada60900840f",
+  "registryBaseUrlGraftOnly": "https://d.grft.dev/99c589f8-4147-4a90-9bb7-563c161280f2__free",
+  "version": "1.0",
+  "installCommands": {
+    "npmGraftOnly": "npm install --registry https://d.grft.dev/99c589f8-4147-4a90-9bb7-563c161280f2__free @graft/maven-groupid_io-quarkus-sample_artifactid_rest-heroes_ri5cld@1.0",
+    "npmRuntime": "npm install --registry https://d.grft.dev/58103a97-de82-489c-ac39-ada60900840f__free @graft/maven-groupid_io-quarkus-sample_artifactid_rest-heroes_ri5cld@1.0"
+  },
+  "visionUrl": "http://localhost:8080/GV",
+  "graftWsUrl": "ws://localhost:8080/ws",
+  "rebuiltAt": "2026-10-26T16:11+01:00"
+}

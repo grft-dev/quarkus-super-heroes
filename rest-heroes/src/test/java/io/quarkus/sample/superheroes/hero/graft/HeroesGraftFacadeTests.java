@@ -22,7 +22,8 @@ import io.smallrye.mutiny.Uni;
 @QuarkusTest
 class HeroesGraftFacadeTests {
 
-  private static final long DEFAULT_ID = 1L;
+  private static final int DEFAULT_ID = 1;
+  private static final Long ENTITY_ID = 1L;
 
   @Inject
   HeroesGraftFacade facade;
@@ -38,12 +39,12 @@ class HeroesGraftFacadeTests {
 
   @Test
   void shouldNotGetUnknownHero() {
-    when(heroService.findHeroApiById(DEFAULT_ID))
+    when(heroService.findHeroApiById(ENTITY_ID))
       .thenReturn(Uni.createFrom().item(Optional.empty()));
 
-    assertThat(facade.getHero(DEFAULT_ID)).isEmpty();
+    assertThat(facade.getHero(DEFAULT_ID)).isNull();
 
-    verify(heroService).findHeroApiById(DEFAULT_ID);
+    verify(heroService).findHeroApiById(ENTITY_ID);
   }
 
   @Test
@@ -51,7 +52,7 @@ class HeroesGraftFacadeTests {
     when(heroService.findRandomHeroApi())
       .thenReturn(Uni.createFrom().item(Optional.empty()));
 
-    assertThat(facade.getRandomHero()).isEmpty();
+    assertThat(facade.getRandomHero()).isNull();
 
     verify(heroService).findRandomHeroApi();
   }

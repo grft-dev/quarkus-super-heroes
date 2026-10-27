@@ -3,7 +3,6 @@ package io.quarkus.sample.superheroes.hero.graft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
 import java.util.Random;
 
 import jakarta.inject.Inject;
@@ -36,7 +35,7 @@ class HeroesGraftFacadeScenariosTest {
   private static final int UPDATED_LEVEL = DEFAULT_LEVEL + 1;
 
   private static final int NB_HEROES = 100;
-  private static Long heroId;
+  private static int heroId;
 
   @Inject
   HeroesGraftFacade facade;
@@ -50,13 +49,13 @@ class HeroesGraftFacadeScenariosTest {
   @Test
   @Order(DEFAULT_ORDER)
   void shouldNotGetUnknownHero() {
-    assertThat(facade.getHero(new Random().nextLong())).isEmpty();
+    assertThat(facade.getHero(Integer.MAX_VALUE - new Random().nextInt(10_000))).isNull();
   }
 
   @Test
   @Order(DEFAULT_ORDER)
   void shouldGetRandomHeroFound() {
-    assertThat(facade.getRandomHero()).isPresent();
+    assertThat(facade.getRandomHero()).isNotNull();
   }
 
   @Test
@@ -77,7 +76,7 @@ class HeroesGraftFacadeScenariosTest {
   @Order(DEFAULT_ORDER)
   void shouldNotFullyUpdateInvalidItem() {
     var hero = new HeroDto()
-      .setId(1L)
+      .setId(1)
       .setName(null)
       .setOtherName(UPDATED_OTHER_NAME)
       .setPicture(UPDATED_PICTURE)
@@ -92,12 +91,12 @@ class HeroesGraftFacadeScenariosTest {
   @Order(DEFAULT_ORDER)
   void shouldNotPartiallyUpdateInvalidItem() {
     var patch = new HeroPatchDto()
-      .setId(50L)
+      .setId(50)
       .setName(null)
       .setOtherName(UPDATED_OTHER_NAME)
       .setPicture(UPDATED_PICTURE)
       .setPowers(UPDATED_PICTURE)
-      .setLevel(0);
+      .setLevel(-1);
 
     assertThatThrownBy(() -> facade.partialUpdateHero(patch.getId(), patch))
       .isInstanceOf(ConstraintViolationException.class);
@@ -107,14 +106,14 @@ class HeroesGraftFacadeScenariosTest {
   @Order(DEFAULT_ORDER)
   void shouldNotFullyUpdateNotFoundItem() {
     var hero = new HeroDto()
-      .setId(-1L)
+      .setId(-1)
       .setName(UPDATED_NAME)
       .setOtherName(UPDATED_OTHER_NAME)
       .setPicture(UPDATED_PICTURE)
       .setPowers(UPDATED_POWERS)
       .setLevel(UPDATED_LEVEL);
 
-    assertThat(facade.replaceHero(-1L, hero)).isFalse();
+    assertThat(facade.replaceHero(-1, hero)).isFalse();
   }
 
   @Test
@@ -124,7 +123,7 @@ class HeroesGraftFacadeScenariosTest {
       .setPicture(DEFAULT_PICTURE)
       .setPowers(DEFAULT_POWERS);
 
-    assertThat(facade.partialUpdateHero(-1L, patch)).isEmpty();
+    assertThat(facade.partialUpdateHero(-1, patch)).isNull();
   }
 
   @Test
@@ -157,9 +156,10 @@ class HeroesGraftFacadeScenariosTest {
     var hero = createDefaultHeroDto();
 
     heroId = facade.createHero(hero);
-    assertThat(heroId).isNotNull();
+    assertThat(heroId).isPositive();
 
-    var returnedHero = facade.getHero(heroId).orElseThrow();
+    var returnedHero = facade.getHero(heroId);
+    assertThat(returnedHero).isNotNull();
     assertThat(returnedHero)
       .usingRecursiveComparison()
       .ignoringFields("id")
@@ -182,7 +182,8 @@ class HeroesGraftFacadeScenariosTest {
     assertThat(facade.replaceHero(heroId, hero)).isTrue();
     assertThat(facade.getAllHeroes(null)).hasSize(NB_HEROES + 1);
 
-    var updatedHero = facade.getHero(heroId).orElseThrow();
+    var updatedHero = facade.getHero(heroId);
+    assertThat(updatedHero).isNotNull();
     assertThat(updatedHero)
       .usingRecursiveComparison()
       .isEqualTo(hero);
@@ -203,7 +204,8 @@ class HeroesGraftFacadeScenariosTest {
       .setLevel(UPDATED_LEVEL)
       .setId(heroId);
 
-    var patchedHero = facade.partialUpdateHero(heroId, patch).orElseThrow();
+    var patchedHero = facade.partialUpdateHero(heroId, patch);
+    assertThat(patchedHero).isNotNull();
 
     assertThat(patchedHero)
       .usingRecursiveComparison()
@@ -229,7 +231,7 @@ class HeroesGraftFacadeScenariosTest {
   @Test
   @Order(DEFAULT_ORDER + 7)
   void shouldGetRandomHeroNotFound() {
-    assertThat(facade.getRandomHero()).isEmpty();
+    assertThat(facade.getRandomHero()).isNull();
   }
 
   @Test
@@ -241,7 +243,7 @@ class HeroesGraftFacadeScenariosTest {
     facade.createHero(h1);
     assertThat(facade.getAllHeroes(null)).hasSize(1);
 
-    facade.replaceAllHeroes(List.of(h1, h2));
+    facade.replaceAllHeroes(new HeroDto[] {h1, h2});
 
     var heroes = facade.getAllHeroes(null);
     assertThat(heroes)
