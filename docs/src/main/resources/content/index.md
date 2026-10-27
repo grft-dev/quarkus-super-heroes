@@ -18,7 +18,7 @@ The application consists of several microservices, communicating either synchron
 
 | Service | Port | Type | Database | Language |
 |---------|------|------|----------|----------|
-| [Hero REST API]({site.url('/rest-heroes')}) | 8083 | REST (reactive) | PostgreSQL | Java |
+| [Heroes (Graftcode)]({site.url('/rest-heroes')}) | 8083 (ops) / 80 (Graft WS) | Graft facade + HTTP health | PostgreSQL | Java |
 | [Villain REST API]({site.url('/rest-villains')}) | 8084 | REST (blocking) | PostgreSQL | Java |
 | [Fight REST API]({site.url('/rest-fights')}) | 8082 | REST (reactive) | MongoDB | Java |
 | [Narration REST API]({site.url('/rest-narration')}) | 8087 | REST (blocking) | — (OpenAI) | Java |
@@ -33,7 +33,7 @@ The application consists of several microservices, communicating either synchron
 ## Communication Flow
 
 - **UI** → rest-fights (REST)
-- **rest-fights** → rest-heroes, rest-villains, rest-narration (REST via SmallRye Stork)
+- **rest-fights** → rest-heroes (**Graft** WebSocket), rest-villains, rest-narration (REST via SmallRye Stork)
 - **rest-fights** → grpc-locations (gRPC)
 - **rest-fights** → Kafka (Avro messages via Apicurio Registry)
 - **event-statistics** ← Kafka consumer
