@@ -10,7 +10,8 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager.TestInjector.A
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 /**
- * Quarkus {@link QuarkusTestResourceLifecycleManager} wrapping a {@link WireMockServer}, binding its base url to the heroes, villains, and narration services, and exposing it to tests that want to inject it via {@link InjectWireMock}.
+ * Quarkus {@link QuarkusTestResourceLifecycleManager} wrapping a {@link WireMockServer}, binding its base url to the villains and narration REST clients, and exposing it to tests that want to inject it via {@link InjectWireMock}.
+ * Heroes are stubbed via {@link io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess} (Graft), not HTTP.
  *
  * @see InjectWireMock
  */
@@ -26,7 +27,8 @@ public class HeroesVillainsNarrationWiremockServerResource implements QuarkusTes
     );
 
     return Map.of(
-      "quarkus.stork.hero-service.service-discovery.address-list", url,
+      "fight.heroes.graft.access", "stub",
+      "quarkus.arc.selected-alternatives", "io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess",
       "quarkus.stork.villain-service.service-discovery.address-list", url,
       "quarkus.stork.narration-service.service-discovery.address-list", url
     );

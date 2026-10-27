@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -31,6 +32,7 @@ import io.quarkus.sample.superheroes.fight.ImageGenerationRequest;
 import io.quarkus.sample.superheroes.fight.client.NarrationImageGenerationRequest;
 import io.quarkus.sample.superheroes.fight.client.Hero;
 import io.quarkus.sample.superheroes.fight.client.HeroClient;
+import io.quarkus.sample.superheroes.fight.client.heroes.HeroGraftStubSupport;
 import io.quarkus.sample.superheroes.fight.client.LocationClient;
 import io.quarkus.sample.superheroes.fight.client.NarrationClient;
 import io.quarkus.sample.superheroes.fight.client.Villain;
@@ -54,12 +56,6 @@ import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 @TestProfile(PactConsumerContractTestProfile.class)
 @PactConsumerTest
 @PactTestFor(pactVersion = PactSpecVersion.V4)
-@MockServerConfig(
-  providerName = "rest-heroes",
-  port = FightServiceConsumerContractTests.HEROES_MOCK_PORT,
-  hostInterface = "localhost",
-  implementation = MockServerImplementation.JavaHttpServer
-)
 @MockServerConfig(
   providerName = "rest-villains",
   port = FightServiceConsumerContractTests.VILLAINS_MOCK_PORT,
@@ -88,10 +84,6 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
   private static final String VILLAIN_PICTURE = "https://somewhere.com/" + DEFAULT_VILLAIN_PICTURE;
   private static final Villain VILLAIN = new Villain(DEFAULT_VILLAIN_NAME, DEFAULT_VILLAIN_LEVEL, VILLAIN_PICTURE, DEFAULT_VILLAIN_POWERS);
 
-  private static final String HERO_API_BASE_URI = "/api/heroes";
-  private static final String HERO_RANDOM_URI = HERO_API_BASE_URI + "/random";
-  private static final String HERO_HELLO_URI = HERO_API_BASE_URI + "/hello";
-  static final String HEROES_MOCK_PORT = "9080";
   private static final String HERO_PICTURE = "https://somewhere.com/" + DEFAULT_HERO_PICTURE;
   private static final Hero HERO = new Hero(DEFAULT_HERO_NAME, DEFAULT_HERO_LEVEL, HERO_PICTURE, DEFAULT_HERO_POWERS);
 
@@ -105,6 +97,11 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
 
   @InjectSpy
   HeroClient heroClient;
+
+  @BeforeEach
+  void resetHeroGraftStub() {
+    HeroGraftStubSupport.reset();
+  }
 
   @InjectSpy
   VillainClient villainClient;
@@ -158,53 +155,6 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
               .stringType("name", DEFAULT_VILLAIN_NAME)
               .integerType("level", DEFAULT_VILLAIN_LEVEL)
               .stringMatcher("picture", "((http|https):\\/\\/).+", VILLAIN_PICTURE)
-          ).build()
-        )
-      .toPact(V4Pact.class);
-  }
-
-  @Pact(consumer = "rest-fights", provider = "rest-heroes")
-  public V4Pact helloHeroesPact(PactDslWithProvider builder) {
-    return builder
-      .uponReceiving("A hello request")
-        .path(HERO_HELLO_URI)
-        .method(HttpMethod.GET)
-        .headers(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN)
-      .willRespondWith()
-        .headers(Map.of(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN))
-        .status(Status.OK.getStatusCode())
-        .body(PactDslRootValue.stringMatcher(".+", DEFAULT_HELLO_HERO_RESPONSE))
-      .toPact(V4Pact.class);
-  }
-
-  @Pact(consumer = "rest-fights", provider = "rest-heroes")
-  public V4Pact randomHeroNotFoundPact(PactDslWithProvider builder) {
-    return builder
-      .given("No random hero found")
-      .uponReceiving("A request for a random hero")
-        .path(HERO_RANDOM_URI)
-        .method(HttpMethod.GET)
-        .headers(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-      .willRespondWith()
-        .status(Status.NOT_FOUND.getStatusCode())
-      .toPact(V4Pact.class);
-  }
-
-  @Pact(consumer = "rest-fights", provider = "rest-heroes")
-  public V4Pact randomHeroFoundPact(PactDslWithProvider builder) {
-    return builder
-      .uponReceiving("A request for a random hero")
-        .path(HERO_RANDOM_URI)
-        .method(HttpMethod.GET)
-        .headers(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-      .willRespondWith()
-        .status(Status.OK.getStatusCode())
-        .headers(Map.of(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
-        .body(newJsonBody(body ->
-            body
-              .stringType("name", DEFAULT_HERO_NAME)
-              .integerType("level", DEFAULT_HERO_LEVEL)
-              .stringMatcher("picture", "((http|https):\\/\\/).+", HERO_PICTURE)
           ).build()
         )
       .toPact(V4Pact.class);
@@ -345,8 +295,9 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
 //  }
 
   @Test
-  @PactTestFor(pactMethods = { "randomHeroNotFoundPact", "randomVillainNotFoundPact" })
+  @PactTestFor(pactMethods = "randomVillainNotFoundPact")
 	public void findRandomFightersNoneFound() {
+    HeroGraftStubSupport.stubRandomHeroNotFound();
 		PanacheMock.mock(Fight.class);
 
 		var fighters = this.fightService.findRandomFighters()
@@ -372,8 +323,9 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
 	}
 
   @Test
-  @PactTestFor(pactMethods = { "randomHeroNotFoundPact", "randomVillainFoundPact" })
+  @PactTestFor(pactMethods = "randomVillainFoundPact")
 	public void findRandomFightersHeroNotFound() {
+    HeroGraftStubSupport.stubRandomHeroNotFound();
 		PanacheMock.mock(Fight.class);
 
 		var fighters = this.fightService.findRandomFighters()
@@ -400,8 +352,9 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
 	}
 
   @Test
-  @PactTestFor(pactMethods = { "randomHeroFoundPact", "randomVillainNotFoundPact" })
+  @PactTestFor(pactMethods = "randomVillainNotFoundPact")
 	public void findRandomFightersVillainNotFound() {
+    HeroGraftStubSupport.stubRandomHero(HERO);
 		PanacheMock.mock(Fight.class);
 
 		var fighters = this.fightService.findRandomFighters()
@@ -428,8 +381,9 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
 	}
 
   @Test
-  @PactTestFor(pactMethods = { "randomHeroFoundPact", "randomVillainFoundPact" })
+  @PactTestFor(pactMethods = "randomVillainFoundPact")
 	public void findRandomFighters() {
+    HeroGraftStubSupport.stubRandomHero(HERO);
 		PanacheMock.mock(Fight.class);
 
 		var fighters = this.fightService.findRandomFighters()
@@ -454,24 +408,6 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
     verifyNoInteractions(this.narrationClient, this.locationClient);
 		PanacheMock.verifyNoInteractions(Fight.class);
 	}
-
-  @Test
-  @PactTestFor(pactMethods = "helloHeroesPact")
-  public void helloHeroesSuccess() {
-    var message = this.fightService.helloHeroes()
-      .subscribe().withSubscriber(UniAssertSubscriber.create())
-      .assertSubscribed()
-      .awaitItem(Duration.ofSeconds(5))
-      .getItem();
-
-    assertThat(message)
-      .isNotNull()
-      .isEqualTo(DEFAULT_HELLO_HERO_RESPONSE);
-
-    verify(this.heroClient).helloHeroes();
-    verify(this.fightService).helloHeroes();
-    verifyNoInteractions(this.villainClient, this.narrationClient, this.locationClient);
-  }
 
   @Test
   @PactTestFor(pactMethods = "helloVillainsPact")
@@ -616,7 +552,8 @@ public class FightServiceConsumerContractTests extends FightServiceTestsBase {
 		@Override
 		public Map<String, String> getConfigOverrides() {
       return Map.of(
-        "quarkus.rest-client.hero-client.url", "http://localhost:%s".formatted(HEROES_MOCK_PORT),
+        "fight.heroes.graft.access", "stub",
+        "quarkus.arc.selected-alternatives", "io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess",
         "fight.villain.client-base-url", "http://localhost:%s".formatted(VILLAINS_MOCK_PORT),
         "quarkus.rest-client.narration-client.url", "http://localhost:%s".formatted(NARRATION_MOCK_PORT),
         "quarkus.grpc.clients.locations.test-port", LOCATION_MOCK_PORT,

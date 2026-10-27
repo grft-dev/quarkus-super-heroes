@@ -27,6 +27,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.sample.superheroes.fight.Fighters;
 import io.quarkus.sample.superheroes.fight.HeroesVillainsNarrationWiremockServerResource;
 import io.quarkus.sample.superheroes.fight.InjectWireMock;
+import io.quarkus.sample.superheroes.fight.client.heroes.HeroGraftStubSupport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,9 +43,11 @@ class HeaderPropagationTests {
   private static final String NO_PROPAGATE_HEADER_NAME = PROPAGATE_HEADER_NAME + "-2";
   private static final String NO_PROPAGATE_HEADER_VALUE = PROPAGATE_HEADER_VALUE + "-2";
 
-  private static final String HERO_API_BASE_URI = "/api/heroes";
-  private static final String HERO_API_URI = HERO_API_BASE_URI + "/random";
-  private static final String HERO_API_HELLO_URI = HERO_API_BASE_URI + "/hello";
+  private static final String VILLAIN_API_BASE_URI = "/api/villains";
+  private static final String VILLAIN_API_URI = VILLAIN_API_BASE_URI + "/random";
+  private static final String VILLAIN_API_HELLO_URI = VILLAIN_API_BASE_URI + "/hello";
+  private static final String NARRATION_API_BASE_URI = "/api/narration";
+  private static final String NARRATION_API_HELLO_URI = NARRATION_API_BASE_URI + "/hello";
   private static final String DEFAULT_HERO_NAME = "Super Baguette";
   private static final String DEFAULT_HERO_PICTURE = "super_baguette.png";
   private static final String DEFAULT_HERO_POWERS = "eats baguette really quickly";
@@ -57,11 +60,6 @@ class HeaderPropagationTests {
     DEFAULT_HERO_POWERS
   );
 
-  private static final String VILLAIN_API_BASE_URI = "/api/villains";
-  private static final String VILLAIN_API_URI = VILLAIN_API_BASE_URI + "/random";
-  private static final String VILLAIN_API_HELLO_URI = VILLAIN_API_BASE_URI + "/hello";
-  private static final String NARRATION_API_BASE_URI = "/api/narration";
-  private static final String NARRATION_API_HELLO_URI = NARRATION_API_BASE_URI + "/hello";
   private static final String DEFAULT_VILLAIN_NAME = "Super Chocolatine";
   private static final String DEFAULT_VILLAIN_PICTURE = "super_chocolatine.png";
   private static final String DEFAULT_VILLAIN_POWERS = "does not eat pain au chocolat";
@@ -81,16 +79,13 @@ class HeaderPropagationTests {
 
   @BeforeEach
   void beforeEach() {
-    // Reset WireMock
+    HeroGraftStubSupport.reset();
     this.wireMockServer.resetAll();
   }
 
   @Test
   void getRandomFightersAllOk() {
-    this.wireMockServer.stubFor(
-      WireMock.get(urlEqualTo(HERO_API_URI))
-        .willReturn(okForContentType(APPLICATION_JSON, getDefaultHeroJson()))
-    );
+    HeroGraftStubSupport.stubRandomHero(DEFAULT_HERO);
 
     this.wireMockServer.stubFor(
       WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -111,13 +106,6 @@ class HeaderPropagationTests {
       .isNotNull()
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(DEFAULT_HERO, DEFAULT_VILLAIN));
-
-    this.wireMockServer.verify(1,
-      getRequestedFor(urlEqualTo(HERO_API_URI))
-        .withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-        .withHeader(PROPAGATE_HEADER_NAME, equalTo(PROPAGATE_HEADER_VALUE))
-        .withoutHeader(NO_PROPAGATE_HEADER_NAME)
-    );
 
     this.wireMockServer.verify(1,
       getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -155,7 +143,6 @@ class HeaderPropagationTests {
 
   static Stream<Arguments> helloServiceHeadersPropagateValues() {
     return Stream.of(
-      arguments("/api/fights/hello/heroes", HERO_API_HELLO_URI, "Hello heroes!"),
       arguments("/api/fights/hello/villains", VILLAIN_API_HELLO_URI, "Hello villains!"),
       arguments("/api/fights/hello/narration", NARRATION_API_HELLO_URI, "Hello narration!")
     );
@@ -172,9 +159,5 @@ class HeaderPropagationTests {
 
   private String getDefaultVillainJson() {
     return writeAsJson(DEFAULT_VILLAIN);
-  }
-
-  private String getDefaultHeroJson() {
-    return writeAsJson(DEFAULT_HERO);
   }
 }
