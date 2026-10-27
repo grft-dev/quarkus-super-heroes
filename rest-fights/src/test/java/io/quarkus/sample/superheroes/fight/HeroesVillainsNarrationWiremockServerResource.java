@@ -2,6 +2,7 @@ package io.quarkus.sample.superheroes.fight;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -26,12 +27,11 @@ public class HeroesVillainsNarrationWiremockServerResource implements QuarkusTes
       this.wireMockServer.isHttpsEnabled() ? this.wireMockServer.httpsPort() : this.wireMockServer.port()
     );
 
-    return Map.of(
-      "fight.heroes.graft.access", "stub",
-      "quarkus.arc.selected-alternatives", "io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess",
-      "quarkus.stork.villain-service.service-discovery.address-list", url,
-      "quarkus.stork.narration-service.service-discovery.address-list", url
-    );
+    var config = new HashMap<>(new ShorterTimeoutsProfile().getConfigOverrides());
+    config.put("quarkus.profile", "integration-test");
+    config.put("quarkus.stork.villain-service.service-discovery.address-list", url);
+    config.put("quarkus.stork.narration-service.service-discovery.address-list", url);
+    return config;
   }
 
   @Override

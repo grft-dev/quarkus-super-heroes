@@ -49,6 +49,7 @@ class HeroClientTests {
 
   @BeforeEach
   void beforeEach() {
+    HeroGraftStubSupport.setRemoteControl(false);
     HeroGraftStubSupport.reset();
     this.circuitBreakerMaintenance.resetAll();
   }
@@ -105,7 +106,7 @@ class HeroClientTests {
           .subscribe().withSubscriber(UniAssertSubscriber.create())
           .awaitSubscription(Duration.ofSeconds(5))
           .awaitFailure(Duration.ofSeconds(5))
-          .assertFailedWith(RuntimeException.class)
+          .assertFailedWith(jakarta.ws.rs.WebApplicationException.class)
       );
 
     var ex = this.heroClient.findRandomHero()

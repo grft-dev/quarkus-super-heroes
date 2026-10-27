@@ -213,6 +213,7 @@ class FightResourceIT {
 
 	@BeforeAll
 	public static void beforeAll() {
+		HeroGraftStubSupport.setRemoteControl(true);
 		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     OBJECT_MAPPER.setDefaultPropertyInclusion(Include.NON_EMPTY);
 
@@ -245,6 +246,7 @@ class FightResourceIT {
 
   @AfterAll
   public static void afterAll() {
+    HeroGraftStubSupport.setRemoteControl(false);
     ClassSecurityValidator.setGlobal(originalValidator);
     originalValidator = null;
   }
