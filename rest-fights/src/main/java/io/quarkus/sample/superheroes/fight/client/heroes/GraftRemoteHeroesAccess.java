@@ -20,6 +20,7 @@ public class GraftRemoteHeroesAccess implements HeroesGraftAccess {
   private static final String FACADE_CLASS = "io.quarkus.sample.superheroes.hero.graft.HeroesGraftFacade";
 
   private static final String[] GRAFT_CONFIG_CLASS_CANDIDATES = {
+    "graft.maven.io.quarkus.sample.rest_heroes_ri5cld.GraftConfig",
     "graft.maven.io.quarkus.sample.artifactid_rest_heroes_ri5cld.GraftConfig",
     "graft.maven.io.quarkus.sample.artifactid_rest-heroes_ri5cld.GraftConfig"
   };
