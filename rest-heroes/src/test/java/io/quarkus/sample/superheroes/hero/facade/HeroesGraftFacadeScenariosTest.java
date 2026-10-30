@@ -1,4 +1,4 @@
-package io.quarkus.sample.superheroes.hero.graft;
+package io.quarkus.sample.superheroes.hero.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

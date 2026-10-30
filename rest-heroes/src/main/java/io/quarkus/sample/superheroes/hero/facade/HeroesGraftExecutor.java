@@ -1,4 +1,4 @@
-package io.quarkus.sample.superheroes.hero.graft;
+package io.quarkus.sample.superheroes.hero.facade;
 
 import java.util.Arrays;
 import java.util.List;

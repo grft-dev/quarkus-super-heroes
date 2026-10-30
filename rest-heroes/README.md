@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Heroes data lives in PostgreSQL. **Callable integration** for other services is through **Graftcode** — `HeroesGraftFacade` (`io.quarkus.sample.superheroes.hero.graft`), not a public REST CRUD API.
+Heroes data lives in PostgreSQL. **Callable integration** for other services is through **Graftcode** — `HeroesGraftFacade` (`io.quarkus.sample.superheroes.hero.facade`), not a public REST CRUD API.
 
 HTTP on port `8083` is for **operations only** (health, metrics, Dev UI in dev mode).
 

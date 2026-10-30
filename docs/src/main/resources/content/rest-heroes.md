@@ -9,7 +9,7 @@ content-toc: true
 
 The heroes service stores hero data in PostgreSQL using [Hibernate Reactive with Panache's repository pattern](https://quarkus.io/guides/hibernate-reactive-panache#solution-2-using-the-repository-pattern).
 
-**Integration surface:** [`HeroesGraftFacade`](https://github.com/quarkusio/quarkus-super-heroes/blob/main/rest-heroes/src/main/java/io/quarkus/sample/superheroes/hero/graft/HeroesGraftFacade.java) (`io.quarkus.sample.superheroes.hero.graft`) with DTOs in `io.quarkus.sample.superheroes.hero.model`. Callers (e.g. `rest-fights`) use a Graft WebSocket host such as `ws://rest-heroes:80/ws`, not HTTP CRUD on `/api/heroes`.
+**Integration surface:** [`HeroesGraftFacade`](https://github.com/quarkusio/quarkus-super-heroes/blob/main/rest-heroes/src/main/java/io/quarkus/sample/superheroes/hero/facade/HeroesGraftFacade.java) (`io.quarkus.sample.superheroes.hero.facade`) with DTOs in `io.quarkus.sample.superheroes.hero.model`. Callers (e.g. `rest-fights`) use a Graft WebSocket host such as `ws://rest-heroes:80/ws`, not HTTP CRUD on `/api/heroes`.
 
 HTTP on port **8083** remains for **Quarkus operations** — health (`/q/health`), metrics, and Dev UI in dev mode.
 

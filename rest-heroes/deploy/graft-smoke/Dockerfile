@@ -16,14 +16,14 @@ WORKDIR /usr/app
 COPY target/quarkus-app ./quarkus-app
 
 # Public Graft surface published to Vision / GPGE (not HeroService — avoids GMA + jakarta.validation failures).
-ENV GRAFT_FACADE_TYPE=io.quarkus.sample.superheroes.hero.graft.HeroesGraftFacade
+ENV GRAFT_FACADE_TYPE=io.quarkus.sample.superheroes.hero.facade.HeroesGraftFacade
 
 # Minimal JAR for GMA/GPGE (facade + DTOs only — sync POJO API, no Uni/Optional/List on the surface).
 RUN set -eux; \
-  mkdir -p /tmp/publish/io/quarkus/sample/superheroes/hero/graft /tmp/publish/io/quarkus/sample/superheroes/hero/model; \
+  mkdir -p /tmp/publish/io/quarkus/sample/superheroes/hero/facade /tmp/publish/io/quarkus/sample/superheroes/hero/model; \
   cd /tmp/publish; \
   jar xf /usr/app/quarkus-app/app/rest-heroes-1.0.0.jar \
-    io/quarkus/sample/superheroes/hero/graft/HeroesGraftFacade.class \
+    io/quarkus/sample/superheroes/hero/facade/HeroesGraftFacade.class \
     io/quarkus/sample/superheroes/hero/model/HeroDto.class \
     io/quarkus/sample/superheroes/hero/model/HeroPatchDto.class; \
   printf 'Manifest-Version: 1.0\nImplementation-Title: rest-heroes\nImplementation-Version: 1.0.0\n' > /tmp/MANIFEST.MF; \

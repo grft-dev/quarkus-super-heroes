@@ -1,4 +1,4 @@
-package io.quarkus.sample.superheroes.hero.graft;
+package io.quarkus.sample.superheroes.hero.facade;
 
 import java.lang.reflect.Method;
 
@@ -15,7 +15,7 @@ import io.quarkus.sample.superheroes.hero.model.HeroPatchDto;
 @ApplicationScoped
 public class HeroesGraftFacade {
 
-  private static final String EXECUTOR = "io.quarkus.sample.superheroes.hero.graft.HeroesGraftExecutor";
+  private static final String EXECUTOR = "io.quarkus.sample.superheroes.hero.facade.HeroesGraftExecutor";
 
   /** Ping hello (same text as former {@code GET /api/heroes/hello}). */
   public String hello() {

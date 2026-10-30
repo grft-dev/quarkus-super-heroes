@@ -4,7 +4,7 @@ import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
 
-import io.quarkus.sample.superheroes.hero.graft.HeroesGraftFacade;
+import io.quarkus.sample.superheroes.hero.facade.HeroesGraftFacade;
 
 /**
  * {@link HealthCheck} to ping the hero Graftcode facade.
