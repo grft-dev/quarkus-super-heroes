@@ -17,6 +17,9 @@ COPY target/quarkus-app ./quarkus-app
 
 # Public Graft surface published to Vision / GPGE (not HeroService — avoids GMA + jakarta.validation failures).
 ENV GRAFT_FACADE_TYPE=io.quarkus.sample.superheroes.hero.facade.HeroesGraftFacade
+ENV GRAFT_HERO_DTO_TYPE=io.quarkus.sample.superheroes.hero.model.HeroDto
+ENV GRAFT_HERO_PATCH_DTO_TYPE=io.quarkus.sample.superheroes.hero.model.HeroPatchDto
+ENV GRAFT_TYPES=${GRAFT_FACADE_TYPE},${GRAFT_HERO_DTO_TYPE},${GRAFT_HERO_PATCH_DTO_TYPE}
 
 # Minimal JAR for GMA/GPGE (facade + DTOs only — sync POJO API, no Uni/Optional/List on the surface).
 RUN set -eux; \
@@ -34,8 +37,8 @@ EXPOSE 80
 EXPOSE 81
 
 # 1) Publish UGM for GV (--graftOnly). 2) Quarkus. 3) Runtime GG bridge on the same facade type.
-CMD ["sh", "-c", "gg /usr/app/graft-publish.jar --graftOnly --types ${GRAFT_FACADE_TYPE} --endpoint ${GG_ENDPOINT:-https://d.grft.dev}; \
+CMD ["sh", "-c", "gg /usr/app/graft-publish.jar --graftOnly --types ${GRAFT_TYPES} --endpoint ${GG_ENDPOINT:-https://d.grft.dev}; \
   cd /usr/app/quarkus-app && java -jar quarkus-run.jar & \
   exec gg /usr/app/quarkus-app/app/rest-heroes-1.0.0.jar --runtime java \
-  --types ${GRAFT_FACADE_TYPE} \
+  --types ${GRAFT_TYPES} \
   --endpoint ${GG_ENDPOINT:-https://d.grft.dev}"]
