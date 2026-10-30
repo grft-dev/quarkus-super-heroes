@@ -9,7 +9,7 @@
       - heroes-db
     ports:
       - "8083:8083"
-      - "8080:80"
+      - "8090:80"
     environment:
       QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://heroes-db:5432/heroes_database
       QUARKUS_HIBERNATE_ORM_SCHEMA_MANAGEMENT_STRATEGY: validate

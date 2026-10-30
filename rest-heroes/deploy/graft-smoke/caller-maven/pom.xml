@@ -19,7 +19,7 @@
     <!-- Replace artifactId/version from docker logs heroes-gg (Maven section) -->
     <dependency>
       <groupId>graft.maven.io.quarkus.sample</groupId>
-      <artifactId>artifactid_rest-heroes_ri5cld</artifactId>
+      <artifactId>rest-heroes_ri5cld</artifactId>
       <version>1.0</version>
     </dependency>
   </dependencies>

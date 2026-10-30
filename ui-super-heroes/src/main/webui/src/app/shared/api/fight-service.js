@@ -6,6 +6,8 @@
 
 import axios from "axios"
 
+import {getRandomHeroFromGraft} from "./heroes-graft-service"
+
 const defaultHeaders = {'Content-Type': "application/json"}
 
 let basePath = window?.APP_CONFIG?.API_BASE_URL
@@ -80,19 +82,29 @@ export async function getRandomLocation() {
 }
 
 /**
- * Returns two random fighters
+ * Returns two random fighters (hero via Graft facade, villain via rest-fights).
  */
 export async function getRandomFighters() {
 
-
-  // Explicitly catch errors and return undefined, since this API is used first
   try {
-    const response = await axios.get(`${basePath}/api/fights/randomfighters`,
-      {
+    const [graftHero, fightersResponse] = await Promise.all([
+      getRandomHeroFromGraft().catch(error => {
+        console.error(error)
+        return undefined
+      }),
+      axios.get(`${basePath}/api/fights/randomfighters`, {
         headers: defaultHeaders,
-      }
-    )
-    return response.data
+      }),
+    ])
+
+    const villain = fightersResponse.data?.villain
+    const hero = graftHero ?? fightersResponse.data?.hero
+
+    if (!hero && !villain) {
+      return undefined
+    }
+
+    return {hero, villain}
   } catch (error) {
     console.error(error)
   }

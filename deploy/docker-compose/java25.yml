@@ -47,12 +47,18 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
 
   rest-fights-java25:
+    build:
+      context: ../../rest-fights
+      dockerfile: src/main/docker/Dockerfile.jvm
     image: quay.io/quarkus-super-heroes/rest-fights:java25-latest
     container_name: rest-fights-java25
     depends_on:
       - fights-db
       - apicurio
       - fights-kafka
+      - rest-heroes-java25
+      - rest-villains-java25
+      - grpc-locations-java25
     ports:
       - "8082:8082"
     environment:
@@ -67,7 +73,7 @@ services:
       QUARKUS_GRPC_CLIENTS_LOCATIONS_HOST: grpc-locations
       QUARKUS_GRPC_CLIENTS_LOCATIONS_PORT: 8089
       MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_APICURIO_REGISTRY_URL: http://apicurio:8086/apis/registry/v2
-      QUARKUS_OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      QUARKUS_OTEL_SDK_DISABLED: "true"
     restart: on-failure
     networks:
       default:
@@ -158,7 +164,7 @@ services:
       - heroes-db
     ports:
       - "8083:8083"
-      - "8080:80"
+      - "8090:80"   # Graft GG (host); keep 8080 for Battle UI
     environment:
       QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://heroes-db:5432/heroes_database
       QUARKUS_HIBERNATE_ORM_SCHEMA_MANAGEMENT_STRATEGY: validate
@@ -264,3 +270,4 @@ services:
     restart: on-failure
     environment:
       API_BASE_URL: http://localhost:8082
+      HEROES_GRAFT_HOST: ws://localhost:8090/ws
