@@ -2,6 +2,7 @@ package io.quarkus.sample.superheroes.fight;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -10,7 +11,8 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager.TestInjector.A
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 /**
- * Quarkus {@link QuarkusTestResourceLifecycleManager} wrapping a {@link WireMockServer}, binding its base url to the heroes, villains, and narration services, and exposing it to tests that want to inject it via {@link InjectWireMock}.
+ * Quarkus {@link QuarkusTestResourceLifecycleManager} wrapping a {@link WireMockServer}, binding its base url to the villains and narration REST clients, and exposing it to tests that want to inject it via {@link InjectWireMock}.
+ * Heroes are stubbed via {@link io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess} (Graft), not HTTP.
  *
  * @see InjectWireMock
  */
@@ -25,11 +27,11 @@ public class HeroesVillainsNarrationWiremockServerResource implements QuarkusTes
       this.wireMockServer.isHttpsEnabled() ? this.wireMockServer.httpsPort() : this.wireMockServer.port()
     );
 
-    return Map.of(
-      "quarkus.stork.hero-service.service-discovery.address-list", url,
-      "quarkus.stork.villain-service.service-discovery.address-list", url,
-      "quarkus.stork.narration-service.service-discovery.address-list", url
-    );
+    var config = new HashMap<>(new ShorterTimeoutsProfile().getConfigOverrides());
+    config.put("quarkus.profile", "integration-test");
+    config.put("quarkus.stork.villain-service.service-discovery.address-list", url);
+    config.put("quarkus.stork.narration-service.service-discovery.address-list", url);
+    return config;
   }
 
   @Override

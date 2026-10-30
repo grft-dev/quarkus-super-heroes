@@ -10,10 +10,7 @@ metadata:
 data:
   quarkus.liquibase-mongodb.migrate-at-start: "false"
   quarkus.mongodb.hosts: fights-db:27017
-  quarkus.stork.hero-service.service-discovery.type: kubernetes
-  quarkus.stork.hero-service.service-discovery.application: rest-heroes
-  quarkus.stork.hero-service.service-discovery.refresh-period: 1H
-  quarkus.stork.hero-service.service-discovery.port-name: http
+  fight.heroes.graft.host: ws://rest-heroes:80/ws
   quarkus.stork.villain-service.service-discovery.type: kubernetes
   quarkus.stork.villain-service.service-discovery.application: rest-villains
   quarkus.stork.villain-service.service-discovery.refresh-period: 1H

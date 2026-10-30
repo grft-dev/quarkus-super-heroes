@@ -1,5 +1,7 @@
 package io.quarkus.sample.superheroes.fight.config;
 
+import java.util.Optional;
+
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
@@ -32,6 +34,11 @@ public interface FightConfig {
    * Narration configuration
    */
   Narration narration();
+
+  /**
+   * Heroes integration (Graftcode caller)
+   */
+  Heroes heroes();
 
 	interface Process {
 		/**
@@ -162,6 +169,23 @@ public interface FightConfig {
 			String powers();
 		}
 	}
+
+  interface Heroes {
+    Graft graft();
+
+    interface Graft {
+      @WithDefault("remote")
+      String access();
+
+      @WithDefault("ws://localhost:8080/ws")
+      String host();
+
+      @WithDefault("true")
+      boolean stateless();
+
+      Optional<String> configClass();
+    }
+  }
 
   interface Location {
     /**

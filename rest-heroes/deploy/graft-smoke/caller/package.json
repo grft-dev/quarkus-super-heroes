@@ -1,0 +1,6 @@
+{
+  "name": "rest-heroes-graft-smoke-caller",
+  "private": true,
+  "type": "module",
+  "dependencies": {}
+}

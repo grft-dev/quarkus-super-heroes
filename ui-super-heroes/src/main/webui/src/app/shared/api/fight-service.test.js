@@ -1,7 +1,9 @@
 import {generateImage, getFights, getRandomFighters, getRandomLocation, narrateFight, startFight} from "./fight-service"
 import axios from "axios"
+import {getRandomHeroFromGraft} from "./heroes-graft-service"
 
 jest.mock('axios')
+jest.mock('./heroes-graft-service')
 
 const fightersData = {
   hero: {
@@ -111,6 +113,7 @@ describe("the fight service", () => {
 
     beforeEach(() => {
       axios.get.mockResolvedValue(fightersResponse)
+      getRandomHeroFromGraft.mockResolvedValue(fightersData.hero)
     })
 
     afterEach(() => {

@@ -416,6 +416,28 @@
       </build>
     </profile>
     <profile>
+      <id>graft-runtime</id>
+      <properties>
+        <!-- Virtual Maven repo from heroes GG publish (second FOR MAVEN block = runtime). Refresh after recreate:
+             docker logs rest-heroes-java25 2>&1 | Select-String "maven2/"
+             Override: -Dheroes.graft.maven.repo=https://d.grft.dev/maven2/<GUID>__free -->
+        <heroes.graft.maven.repo>https://d.grft.dev/maven2/79ab2515-59ed-46b9-b06c-3ae0ff3d9c56__free</heroes.graft.maven.repo>
+      </properties>
+      <repositories>
+        <repository>
+          <id>heroes-graft-virtual</id>
+          <url>${heroes.graft.maven.repo}</url>
+        </repository>
+      </repositories>
+      <dependencies>
+        <dependency>
+          <groupId>graft.maven.io.quarkus.sample</groupId>
+          <artifactId>rest-heroes_ri5cld</artifactId>
+          <version>1.0</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>it-coverage</id>
       <activation>
         <property>

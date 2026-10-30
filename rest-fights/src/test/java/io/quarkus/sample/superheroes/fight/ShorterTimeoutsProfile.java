@@ -50,6 +50,9 @@ public class ShorterTimeoutsProfile implements QuarkusTestProfile {
       "quarkus.fault-tolerance.\"%s/findRandomVillain\".timeout.unit".formatted(FIGHT_SERVICE_CLASS_NAME), "seconds"
     ));
 
+    vals.put("fight.heroes.graft.access", "stub");
+    vals.put("quarkus.arc.selected-alternatives", "io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess");
+
     vals.putAll(Map.of(
       "quarkus.fault-tolerance.\"%s/findRandomVillain\".circuit-breaker.delay".formatted(VillainClient.class.getName()), String.valueOf(CIRCUIT_BREAKER_OVERRIDDEN_DELAY),
       "quarkus.fault-tolerance.\"%s/findRandomHero\".circuit-breaker.delay".formatted(HeroClient.class.getName()), String.valueOf(CIRCUIT_BREAKER_OVERRIDDEN_DELAY),

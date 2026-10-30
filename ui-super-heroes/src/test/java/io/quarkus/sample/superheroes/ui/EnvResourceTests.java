@@ -28,7 +28,7 @@ class EnvResourceTests {
         assertThat(baseUrl).isNotBlank();
 
         get("/env.js").then().statusCode(OK.getStatusCode()).body(
-                is("window.APP_CONFIG={\"API_BASE_URL\":\"%s\",\"CALCULATE_API_BASE_URL\":false}".formatted(baseUrl)));
+                is("window.APP_CONFIG={\"API_BASE_URL\":\"%s\",\"CALCULATE_API_BASE_URL\":false,\"HEROES_GRAFT_HOST\":\"ws://localhost:8090/ws\",\"HEROES_GRAFT_ENABLED\":true}".formatted(baseUrl)));
         // This content is javascript, not json. Doing a simple equality check like this
         // is brittle, but we can update it to something more flexible if we start to see issues
     }
