@@ -187,6 +187,28 @@ public interface FightConfig {
     }
   }
 
+  /**
+   * Villains integration (Graftcode caller)
+   */
+  Villains villains();
+
+  interface Villains {
+    Graft graft();
+
+    interface Graft {
+      @WithDefault("remote")
+      String access();
+
+      @WithDefault("ws://localhost:8080/ws")
+      String host();
+
+      @WithDefault("true")
+      boolean stateless();
+
+      Optional<String> configClass();
+    }
+  }
+
   interface Location {
     /**
      * FightLocation fallback configuration

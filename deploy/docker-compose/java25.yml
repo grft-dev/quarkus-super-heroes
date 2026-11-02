@@ -49,7 +49,7 @@ services:
   rest-fights-java25:
     build:
       context: ../../rest-fights
-      dockerfile: src/main/docker/Dockerfile.jvm
+      dockerfile: deploy/graft-smoke/Dockerfile
     image: quay.io/quarkus-super-heroes/rest-fights:java25-latest
     container_name: rest-fights-java25
     depends_on:
@@ -61,6 +61,7 @@ services:
       - grpc-locations-java25
     ports:
       - "8082:8082"
+      - "8092:80"
     environment:
       QUARKUS_MONGODB_HOSTS: fights-db:27017
       KAFKA_BOOTSTRAP_SERVERS: PLAINTEXT://fights-kafka:9092
@@ -68,6 +69,8 @@ services:
       QUARKUS_MONGODB_CREDENTIALS_USERNAME: superfight
       QUARKUS_MONGODB_CREDENTIALS_PASSWORD: superfight
       FIGHT_HEROES_GRAFT_HOST: ws://rest-heroes:80/ws
+      FIGHT_VILLAINS_GRAFT_HOST: ws://rest-villains:80/ws
+      GG_ENDPOINT: https://d.grft.dev
       QUARKUS_STORK_VILLAIN_SERVICE_SERVICE_DISCOVERY_ADDRESS_LIST: rest-villains:8084
       QUARKUS_STORK_NARRATION_SERVICE_SERVICE_DISCOVERY_ADDRESS_LIST: rest-narration:8087
       QUARKUS_GRPC_CLIENTS_LOCATIONS_HOST: grpc-locations
@@ -127,12 +130,16 @@ services:
       - ../../grpc-locations/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql
 
   rest-villains-java25:
+    build:
+      context: ../../rest-villains
+      dockerfile: deploy/graft-smoke/Dockerfile
     image: quay.io/quarkus-super-heroes/rest-villains:java25-latest
     container_name: rest-villains-java25
     depends_on:
       - villains-db
     ports:
       - "8084:8084"
+      - "8091:80"
     environment:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://villains-db:5432/villains_database
       QUARKUS_HIBERNATE_ORM_SCHEMA_MANAGEMENT_STRATEGY: validate
@@ -140,6 +147,7 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: superbad
       QUARKUS_HIBERNATE_ORM_SQL_LOAD_SCRIPT: no-file
       QUARKUS_OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      GG_ENDPOINT: https://d.grft.dev
     restart: on-failure
     networks:
       default:
@@ -271,3 +279,5 @@ services:
     environment:
       API_BASE_URL: http://localhost:8082
       HEROES_GRAFT_HOST: ws://localhost:8090/ws
+      VILLAINS_GRAFT_HOST: ws://localhost:8091/ws
+      FIGHTS_GRAFT_HOST: ws://localhost:8092/ws

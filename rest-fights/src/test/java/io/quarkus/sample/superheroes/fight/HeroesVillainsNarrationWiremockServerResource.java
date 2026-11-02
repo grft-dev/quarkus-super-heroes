@@ -12,7 +12,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 /**
  * Quarkus {@link QuarkusTestResourceLifecycleManager} wrapping a {@link WireMockServer}, binding its base url to the villains and narration REST clients, and exposing it to tests that want to inject it via {@link InjectWireMock}.
- * Heroes are stubbed via {@link io.quarkus.sample.superheroes.fight.client.heroes.StubHeroesGraftAccess} (Graft), not HTTP.
+ * Heroes and villains are stubbed via Graft test doubles, not HTTP.
  *
  * @see InjectWireMock
  */
@@ -29,7 +29,6 @@ public class HeroesVillainsNarrationWiremockServerResource implements QuarkusTes
 
     var config = new HashMap<>(new ShorterTimeoutsProfile().getConfigOverrides());
     config.put("quarkus.profile", "integration-test");
-    config.put("quarkus.stork.villain-service.service-discovery.address-list", url);
     config.put("quarkus.stork.narration-service.service-discovery.address-list", url);
     return config;
   }

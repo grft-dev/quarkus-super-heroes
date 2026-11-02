@@ -16,14 +16,18 @@ From the `quarkus-super-heroes/ui-super-heroes` directory, simply run `quarkus d
 
 The application uses [Microcks](https://microcks.io) in dev mode by default to provide mock responses from downstream services, so no other services need to be running.
 
-### Heroes via Graftcode (browser)
+### Graftcode (browser) — heroes, villains, battles
 
-Random **heroes** are loaded from **`HeroesGraftFacade`** over WebSocket (`heroes-graft-service.js`), not from heroes REST. Villains still come from `rest-fights` (`/api/fights/randomfighters`).
+| Facade | WebSocket (full stack compose) |
+|--------|--------------------------------|
+| `HeroesGraftFacade` | `ws://localhost:8090/ws` |
+| `VillainsGraftFacade` | `ws://localhost:8091/ws` |
+| `FightsGraftFacade` | `ws://localhost:8092/ws` |
 
-1. Publish heroes Graft (see [`rest-heroes/deploy/graft-smoke/README.md`](../rest-heroes/deploy/graft-smoke/README.md)).
-2. Install the generated npm package in `src/main/webui` (command from Vision / `docker logs` on GG).
-3. Set `heroes.graft.host` (env `HEROES_GRAFT_HOST`) — default `ws://localhost:8090/ws` for full-stack Docker Compose.
+Random fighters use **heroes + villains** Graft clients (`heroes-graft-service.js`, `villains-graft-service.js`). Fights list, start fight, location, narration, and image use **`fights-graft-service.js`**.
 
-Until the real package is installed, `graft-stub` is used so CI builds; replace it with the `@graft/maven-groupid_io-quarkus-sample_artifactid_rest-heroes_ri5cld` package from your registry.
+Publish each service with [`deploy/graft-smoke/`](../rest-heroes/deploy/graft-smoke/README.md) (heroes / villains / fights modules). Install the three npm packages from Vision logs; until then `graft-stub*` folders keep CI green.
+
+Env: `HEROES_GRAFT_HOST`, `VILLAINS_GRAFT_HOST`, `FIGHTS_GRAFT_HOST` via `/env.js`.
 
 ![main-ui](images/main-ui.png)

@@ -12,5 +12,13 @@ object mapping, we need to do our own registering.
  */
 @JsonNaming(PropertyNamingStrategies.UpperSnakeCaseStrategy.class)
 @RegisterForReflection
-public record Config(String apiBaseUrl, boolean calculateApiBaseUrl, String heroesGraftHost, boolean heroesGraftEnabled) {
+public record Config(
+  String apiBaseUrl,
+  boolean calculateApiBaseUrl,
+  String heroesGraftHost,
+  boolean heroesGraftEnabled,
+  String villainsGraftHost,
+  boolean villainsGraftEnabled,
+  String fightsGraftHost,
+  boolean fightsGraftEnabled) {
 }

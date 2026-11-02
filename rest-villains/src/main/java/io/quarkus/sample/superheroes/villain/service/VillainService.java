@@ -12,13 +12,17 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.executable.ValidateOnExecution;
 
 import io.quarkus.logging.Log;
 
 import io.quarkus.sample.superheroes.villain.Villain;
 import io.quarkus.sample.superheroes.villain.config.VillainConfig;
 import io.quarkus.sample.superheroes.villain.mapping.VillainFullUpdateMapper;
+import io.quarkus.sample.superheroes.villain.mapping.VillainMapper;
 import io.quarkus.sample.superheroes.villain.mapping.VillainPartialUpdateMapper;
+import io.quarkus.sample.superheroes.villain.model.VillainDto;
+import io.quarkus.sample.superheroes.villain.model.VillainPatchDto;
 
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -28,7 +32,11 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
  */
 @ApplicationScoped
 @Transactional(REQUIRED)
+@ValidateOnExecution
 public class VillainService {
+
+  public static final String HELLO_MESSAGE = "Hello Villain Resource";
+
   @Inject
 	Validator validator;
 
@@ -36,10 +44,77 @@ public class VillainService {
   VillainConfig villainConfig;
 
   @Inject
+  VillainMapper villainMapper;
+
+  @Inject
   VillainPartialUpdateMapper villainPartialUpdateMapper;
 
   @Inject
   VillainFullUpdateMapper villainFullUpdateMapper;
+
+  @Transactional(SUPPORTS)
+  @WithSpan("VillainService.hello")
+  public String hello() {
+    return HELLO_MESSAGE;
+  }
+
+  @Transactional(SUPPORTS)
+  @WithSpan("VillainService.listVillains")
+  public List<VillainDto> listVillains(@SpanAttribute("arg.nameFilter") String nameFilter) {
+    var villains = (nameFilter != null)
+      ? findAllVillainsHavingName(nameFilter)
+      : findAllVillains();
+
+    Log.debugf("Total number of villains: %d", villains.size());
+    return this.villainMapper.toDtoList(villains);
+  }
+
+  @Transactional(SUPPORTS)
+  @WithSpan("VillainService.findRandomVillainApi")
+  public Optional<VillainDto> findRandomVillainApi() {
+    return findRandomVillain()
+      .map(this.villainMapper::toDto);
+  }
+
+  @Transactional(SUPPORTS)
+  @WithSpan("VillainService.findVillainApiById")
+  public Optional<VillainDto> findVillainApiById(@SpanAttribute("arg.id") Long id) {
+    return findVillainById(id)
+      .map(this.villainMapper::toDto);
+  }
+
+  @WithSpan("VillainService.createVillain")
+  public VillainDto createVillain(@SpanAttribute("arg.villain") @NotNull @Valid VillainDto villain) {
+    return this.villainMapper.toDto(persistVillain(this.villainMapper.toEntity(villain)));
+  }
+
+  @WithSpan("VillainService.replaceVillain")
+  public boolean replaceVillain(@SpanAttribute("arg.id") Long id, @SpanAttribute("arg.villain") @NotNull @Valid VillainDto villain) {
+    var entity = this.villainMapper.toEntity(villain);
+
+    if (entity.id == null) {
+      entity.id = id;
+    }
+
+    return replaceVillain(entity).isPresent();
+  }
+
+  @WithSpan("VillainService.partialUpdateVillain")
+  public Optional<VillainDto> partialUpdateVillain(@SpanAttribute("arg.id") Long id, @SpanAttribute("arg.patch") @NotNull VillainPatchDto patch) {
+    var entity = this.villainMapper.toEntity(patch);
+
+    if (entity.id == null) {
+      entity.id = id;
+    }
+
+    return partialUpdateVillain(entity)
+      .map(this.villainMapper::toDto);
+  }
+
+  @WithSpan("VillainService.replaceAllVillainsFromDtos")
+  public void replaceAllVillainsFromDtos(@SpanAttribute("arg.villains") List<VillainDto> villains) {
+    replaceAllVillains(this.villainMapper.toEntityList(villains));
+  }
 
 	@Transactional(SUPPORTS)
   @WithSpan("VillainService.findAllVillains")
