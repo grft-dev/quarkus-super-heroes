@@ -68,7 +68,7 @@ quarkus:
   helm:
     name: "${quarkus.application.name}"
     description: "Helm chart for ${quarkus.application.name}"
-    version: 1.0.0
+    version: 1.0.0.0
     create-tar-file: false
     values:
       memoryLimit:

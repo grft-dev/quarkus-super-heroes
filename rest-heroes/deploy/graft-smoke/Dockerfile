@@ -25,11 +25,11 @@ ENV GRAFT_TYPES=${GRAFT_FACADE_TYPE},${GRAFT_HERO_DTO_TYPE},${GRAFT_HERO_PATCH_D
 RUN set -eux; \
   mkdir -p /tmp/publish/io/quarkus/sample/superheroes/hero/facade /tmp/publish/io/quarkus/sample/superheroes/hero/model; \
   cd /tmp/publish; \
-  jar xf /usr/app/quarkus-app/app/rest-heroes-1.0.0.jar \
+  jar xf /usr/app/quarkus-app/app/rest-heroes-1.0.0.0.jar \
     io/quarkus/sample/superheroes/hero/facade/HeroesGraftFacade.class \
     io/quarkus/sample/superheroes/hero/model/HeroDto.class \
     io/quarkus/sample/superheroes/hero/model/HeroPatchDto.class; \
-  printf 'Manifest-Version: 1.0\nImplementation-Title: rest-heroes\nImplementation-Version: 1.0.0\n' > /tmp/MANIFEST.MF; \
+  printf 'Manifest-Version: 1.0\nImplementation-Title: rest-heroes\nImplementation-Version: 1.0.0.0\n' > /tmp/MANIFEST.MF; \
   jar cfm /usr/app/graft-publish.jar /tmp/MANIFEST.MF -C /tmp/publish .; \
   rm -rf /tmp/publish /tmp/MANIFEST.MF
 
@@ -39,6 +39,6 @@ EXPOSE 81
 # 1) Publish UGM for GV (--graftOnly). 2) Quarkus. 3) Runtime GG bridge on the same facade type.
 CMD ["sh", "-c", "gg /usr/app/graft-publish.jar --graftOnly --types ${GRAFT_TYPES} --endpoint ${GG_ENDPOINT:-https://d.grft.dev}; \
   cd /usr/app/quarkus-app && java -jar quarkus-run.jar & \
-  exec gg /usr/app/quarkus-app/app/rest-heroes-1.0.0.jar --runtime java \
+  exec gg /usr/app/quarkus-app/app/rest-heroes-1.0.0.0.jar --runtime java \
   --types ${GRAFT_TYPES} \
   --endpoint ${GG_ENDPOINT:-https://d.grft.dev}"]

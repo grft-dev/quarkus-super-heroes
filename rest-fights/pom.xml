@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.quarkus.sample.super-heroes</groupId>
   <artifactId>rest-fights</artifactId>
-  <version>1.0</version>
+  <version>1.0.0.0</version>
   <name>Quarkus Sample :: Super-Heroes :: Fights Microservice</name>
   <description>The fights RESTful microservice</description>
   <properties>
@@ -434,12 +434,12 @@
         <dependency>
           <groupId>graft.maven.io.quarkus.sample</groupId>
           <artifactId>rest-heroes_ri5cld</artifactId>
-          <version>1.0</version>
+          <version>1.0.0.0</version>
         </dependency>
         <dependency>
           <groupId>graft.maven.io.quarkus.sample</groupId>
           <artifactId>rest-villains_ri5cld</artifactId>
-          <version>1.0</version>
+          <version>1.0.0.0</version>
         </dependency>
       </dependencies>
     </profile>

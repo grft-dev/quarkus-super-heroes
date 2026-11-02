@@ -42,7 +42,7 @@ Optional: `getAllHeroes` with `null` filter, `getHero` with a valid id from DB.
 ## Surface / GMA notes (Quarkus)
 
 - **`graft-publish.jar`** — minimal JAR (facade + DTOs) for `gg … --graftOnly`
-- **Runtime** — Quarkus in background + `gg` on `app/rest-heroes-1.0.jar` with `--types HeroesGraftFacade`
+- **Runtime** — Quarkus in background + `gg` on `app/rest-heroes-1.0.0.0.jar` with `--types HeroesGraftFacade`
 - **Executor** — reflection bridge so GMA sees sync POJO API only
 - **Types** — portable baseline: `int`, `String`, `boolean`, `HeroDto[]`, nullable `HeroDto`; no `Long`, `java.util.Optional`, `java.util.List` on the facade
 
@@ -52,7 +52,7 @@ GUID from logs (first `npm install` block after publish):
 
 ```powershell
 cd deploy\graft-smoke\caller
-npm.cmd install --registry "https://d.grft.dev/<GUID>__free" "@graft/maven-groupid_io-quarkus-sample_artifactid_rest-heroes_ri5cld@1.0"
+npm.cmd install --registry "https://d.grft.dev/<GUID>__free" "@graft/maven-groupid_io-quarkus-sample_artifactid_rest-heroes_ri5cld@1.0.0.0"
 ```
 
 On Windows use **`npm.cmd`** if PowerShell blocks `npm.ps1` (execution policy).

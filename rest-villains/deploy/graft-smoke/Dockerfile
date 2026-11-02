@@ -23,11 +23,11 @@ ENV GRAFT_TYPES=${GRAFT_FACADE_TYPE},${GRAFT_VILLAIN_DTO_TYPE},${GRAFT_VILLAIN_P
 RUN set -eux; \
   mkdir -p /tmp/publish/io/quarkus/sample/superheroes/villain/facade /tmp/publish/io/quarkus/sample/superheroes/villain/model; \
   cd /tmp/publish; \
-  jar xf /usr/app/quarkus-app/app/rest-villains-1.0.jar \
+  jar xf /usr/app/quarkus-app/app/rest-villains-1.0.0.0.jar \
     io/quarkus/sample/superheroes/villain/facade/VillainsGraftFacade.class \
     io/quarkus/sample/superheroes/villain/model/VillainDto.class \
     io/quarkus/sample/superheroes/villain/model/VillainPatchDto.class; \
-  printf 'Manifest-Version: 1.0\nImplementation-Title: rest-villains\nImplementation-Version: 1.0\n' > /tmp/MANIFEST.MF; \
+  printf 'Manifest-Version: 1.0\nImplementation-Title: rest-villains\nImplementation-Version: 1.0.0.0\n' > /tmp/MANIFEST.MF; \
   jar cfm /usr/app/graft-publish.jar /tmp/MANIFEST.MF -C /tmp/publish .; \
   rm -rf /tmp/publish /tmp/MANIFEST.MF
 
@@ -36,6 +36,6 @@ EXPOSE 81
 
 CMD ["sh", "-c", "gg /usr/app/graft-publish.jar --graftOnly --types ${GRAFT_TYPES} --endpoint ${GG_ENDPOINT:-https://d.grft.dev}; \
   cd /usr/app/quarkus-app && java -jar quarkus-run.jar & \
-  exec gg /usr/app/quarkus-app/app/rest-villains-1.0.jar --runtime java \
+  exec gg /usr/app/quarkus-app/app/rest-villains-1.0.0.0.jar --runtime java \
   --types ${GRAFT_TYPES} \
   --endpoint ${GG_ENDPOINT:-https://d.grft.dev}"]

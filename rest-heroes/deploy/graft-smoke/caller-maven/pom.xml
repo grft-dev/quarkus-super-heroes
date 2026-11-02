@@ -20,7 +20,7 @@
     <dependency>
       <groupId>graft.maven.io.quarkus.sample</groupId>
       <artifactId>rest-heroes_ri5cld</artifactId>
-      <version>1.0</version>
+      <version>1.0.0.0</version>
     </dependency>
   </dependencies>
 </project>
