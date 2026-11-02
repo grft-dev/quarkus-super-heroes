@@ -1,7 +1,19 @@
 import {generateImage, getFights, getRandomFighters, getRandomLocation, narrateFight, startFight} from "./fight-service"
 import axios from "axios"
+import {getRandomHeroFromGraft} from "./heroes-graft-service"
+import {getRandomVillainFromGraft} from "./villains-graft-service"
+import {
+  generateImageFromGraft,
+  getFightsFromGraft,
+  getRandomLocationFromGraft,
+  narrateFightFromGraft,
+  startFightFromGraft,
+} from "./fights-graft-service"
 
 jest.mock('axios')
+jest.mock('./heroes-graft-service')
+jest.mock('./villains-graft-service')
+jest.mock('./fights-graft-service')
 
 const fightersData = {
   hero: {
@@ -110,16 +122,18 @@ describe("the fight service", () => {
   describe("getting random fighters", () => {
 
     beforeEach(() => {
-      axios.get.mockResolvedValue(fightersResponse)
+      getRandomHeroFromGraft.mockResolvedValue(fightersData.hero)
+      getRandomVillainFromGraft.mockResolvedValue(fightersData.villain)
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("invokes the remote api", async () => {
+    it("loads fighters from graft", async () => {
       await getRandomFighters({})
-      expect(axios.get).toHaveBeenCalled()
+      expect(getRandomHeroFromGraft).toHaveBeenCalled()
+      expect(getRandomVillainFromGraft).toHaveBeenCalled()
     })
 
     it("returns fighters", async () => {
@@ -127,16 +141,17 @@ describe("the fight service", () => {
       expect(answer).toStrictEqual(fightersData)
     })
 
-    describe("when back-end services are missing", () => {
+    describe("when graft clients fail", () => {
       beforeEach(() => {
-        axios.get.mockRejectedValue(new Error('Deliberate error: No Java services available'))
+        getRandomHeroFromGraft.mockRejectedValue(new Error('Deliberate error'))
+        getRandomVillainFromGraft.mockRejectedValue(new Error('Deliberate error'))
       })
 
       afterEach(() => {
         jest.resetAllMocks()
       })
 
-      it("gets new fighters", async () => {
+      it("returns undefined", async () => {
         const answer = await getRandomFighters({})
         expect(answer).toBeUndefined()
       })
@@ -146,16 +161,16 @@ describe("the fight service", () => {
   describe("getting random location", () => {
 
     beforeEach(() => {
-      axios.get.mockResolvedValue(locationResponse)
+      getRandomLocationFromGraft.mockResolvedValue(locationData)
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("invokes the remote api", async () => {
+    it("uses fights graft", async () => {
       await getRandomLocation({})
-      expect(axios.get).toHaveBeenCalled()
+      expect(getRandomLocationFromGraft).toHaveBeenCalled()
     })
 
     it("returns location", async () => {
@@ -163,9 +178,10 @@ describe("the fight service", () => {
       expect(answer).toStrictEqual(locationData)
     })
 
-    describe("when back-end services are missing", () => {
+    describe("when graft and REST fail", () => {
       beforeEach(() => {
-        axios.get.mockRejectedValue(new Error('Deliberate error: No Java services available'))
+        getRandomLocationFromGraft.mockRejectedValue(new Error('Deliberate error'))
+        axios.get.mockRejectedValue(new Error('Deliberate error'))
       })
 
       afterEach(() => {
@@ -181,39 +197,33 @@ describe("the fight service", () => {
 
   describe("triggering a fight", () => {
     beforeEach(() => {
-      axios.post.mockResolvedValue(fightResponse)
+      startFightFromGraft.mockResolvedValue(fightData)
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("invokes the remote api", async () => {
+    it("uses fights graft", async () => {
       const response = await startFight(fightersData)
-      expect(axios.post).toHaveBeenCalled()
-      expect(axios.post).toHaveBeenLastCalledWith(expect.anything(), fightersData, expect.anything())
-    })
-
-    it("returns the data", async () => {
-      const answer = await startFight(fightersData)
-      expect(answer).toStrictEqual(fightData)
+      expect(startFightFromGraft).toHaveBeenCalled()
+      expect(response).toStrictEqual(fightData)
     })
   })
 
   describe("narrating a fight", () => {
 
     beforeEach(() => {
-      axios.post.mockResolvedValue(narrationResponse)
+      narrateFightFromGraft.mockResolvedValue(narrationData)
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("invokes the remote api", async () => {
+    it("uses fights graft", async () => {
       await narrateFight(fightData)
-      expect(axios.post).toHaveBeenCalled()
-      expect(axios.post).toHaveBeenLastCalledWith(expect.anything(), fightData, expect.anything())
+      expect(narrateFightFromGraft).toHaveBeenCalled()
     })
 
     it("narrates the fight", async () => {
@@ -225,17 +235,16 @@ describe("the fight service", () => {
   describe("generating an image from a fight narration", () => {
 
     beforeEach(() => {
-      axios.post.mockResolvedValue(narrationImageResponse)
+      generateImageFromGraft.mockResolvedValue(narrationImageData)
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("invokes the remote api", async () => {
+    it("uses fights graft", async () => {
       await generateImage(narrationData, "https://winner.png", "https://loser.png")
-      expect(axios.post).toHaveBeenCalled()
-      expect(axios.post).toHaveBeenLastCalledWith(expect.anything(), { narration: narrationData, winnerPictureUrl: "https://winner.png", loserPictureUrl: "https://loser.png" }, expect.anything())
+      expect(generateImageFromGraft).toHaveBeenCalled()
     })
 
     it("generates an image", async () => {
@@ -246,17 +255,16 @@ describe("the fight service", () => {
 
   describe("listing fights", () => {
     beforeEach(() => {
-      axios.get.mockResolvedValue(fightsList)
+      getFightsFromGraft.mockResolvedValue([fightData])
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("requests all fights without pagination query params by default", async () => {
+    it("uses fights graft by default", async () => {
       await getFights()
-      expect(axios.get).toHaveBeenCalled()
-      expect(axios.get.mock.calls[0][1].params).toBeUndefined()
+      expect(getFightsFromGraft).toHaveBeenCalled()
     })
 
     it("returns the data", async () => {
@@ -264,13 +272,13 @@ describe("the fight service", () => {
       expect(answer).toStrictEqual([fightData])
     })
 
-    it("passes custom page and size as query params", async () => {
+    it("passes page and size to graft", async () => {
       await getFights({page: 10, size: 100})
-      expect(axios.get.mock.calls[0][1].params).toEqual({page: 10, size: 100})
+      expect(getFightsFromGraft).toHaveBeenCalledWith({page: 10, size: 100})
     })
 
-    it("returns an empty list when the backend has no rows for the requested page", async () => {
-      axios.get.mockResolvedValue({data: [], headers: fightsList.headers})
+    it("returns an empty list when graft has no rows", async () => {
+      getFightsFromGraft.mockResolvedValue([])
       const answer = await getFights({page: 10, size: 100})
       expect(answer).toStrictEqual([])
     })

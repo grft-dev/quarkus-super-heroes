@@ -25,6 +25,24 @@ public class EnvResource {
     @ConfigProperty(name = "calculate.api.base.url", defaultValue = "false")
     boolean calculateApiBaseUrl;
 
+    @ConfigProperty(name = "heroes.graft.host", defaultValue = "ws://localhost:8090/ws")
+    String heroesGraftHost;
+
+    @ConfigProperty(name = "heroes.graft.enabled", defaultValue = "true")
+    boolean heroesGraftEnabled;
+
+    @ConfigProperty(name = "villains.graft.host", defaultValue = "ws://localhost:8091/ws")
+    String villainsGraftHost;
+
+    @ConfigProperty(name = "villains.graft.enabled", defaultValue = "true")
+    boolean villainsGraftEnabled;
+
+    @ConfigProperty(name = "fights.graft.host", defaultValue = "ws://localhost:8092/ws")
+    String fightsGraftHost;
+
+    @ConfigProperty(name = "fights.graft.enabled", defaultValue = "true")
+    boolean fightsGraftEnabled;
+
     @Inject
     ObjectMapper objectMapper;
 
@@ -32,7 +50,15 @@ public class EnvResource {
     @Produces(APPLICATION_JSON)
     @NonBlocking
     public String getConfig() throws JsonProcessingException {
-        var config = new Config(this.url, this.calculateApiBaseUrl);
+        var config = new Config(
+          this.url,
+          this.calculateApiBaseUrl,
+          this.heroesGraftHost,
+          this.heroesGraftEnabled,
+          this.villainsGraftHost,
+          this.villainsGraftEnabled,
+          this.fightsGraftHost,
+          this.fightsGraftEnabled);
 
         // We could just return the Config object, but that would be json, and we want a
         // javascript snippet we can include with <script src="..."/>

@@ -1,0 +1,42 @@
+# Local Graftcode smoke: Postgres + network for heroes-gg (see Dockerfile in this folder).
+services:
+  heroes-db:
+    image: postgres:18
+    container_name: heroes-db-graft-smoke
+    environment:
+      POSTGRES_USER: superman
+      POSTGRES_PASSWORD: superman
+      POSTGRES_DB: heroes_database
+    volumes:
+      - ../db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superman -d heroes_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - graft-smoke
+
+  heroes-gg:
+    build:
+      context: ../..
+      dockerfile: deploy/graft-smoke/Dockerfile
+    container_name: heroes-gg
+    depends_on:
+      heroes-db:
+        condition: service_healthy
+    ports:
+      - "8080:80"   # GG: ws://localhost:8080/ws and http://localhost:8080/GV (preferred for Try it out)
+      - "8081:81"   # Vision on container :81 — prefer :8080/GV for Run (see README)
+    environment:
+      QUARKUS_PROFILE: prod
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://heroes-db:5432/heroes_database
+      QUARKUS_DATASOURCE_USERNAME: superman
+      QUARKUS_DATASOURCE_PASSWORD: superman
+      GG_ENDPOINT: https://d.grft.dev
+    networks:
+      - graft-smoke
+
+networks:
+  graft-smoke:
+    name: heroes-graft-smoke

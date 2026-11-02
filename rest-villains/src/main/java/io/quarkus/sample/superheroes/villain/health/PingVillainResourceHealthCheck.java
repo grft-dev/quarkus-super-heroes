@@ -1,28 +1,29 @@
 package io.quarkus.sample.superheroes.villain.health;
 
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
 
-import io.quarkus.sample.superheroes.villain.rest.HelloVillainResource;
+import io.quarkus.sample.superheroes.villain.facade.VillainsGraftFacade;
 
 /**
- * {@link HealthCheck} to ping the Villain service
+ * {@link HealthCheck} to ping the villain Graftcode facade.
  */
 @Liveness
 public class PingVillainResourceHealthCheck implements HealthCheck {
-	@Inject
-	HelloVillainResource helloVillainResource;
+  private final VillainsGraftFacade villainsGraftFacade;
 
-	@Override
-	public HealthCheckResponse call() {
-		var response = this.helloVillainResource.hello();
+  public PingVillainResourceHealthCheck(VillainsGraftFacade villainsGraftFacade) {
+    this.villainsGraftFacade = villainsGraftFacade;
+  }
 
-		return HealthCheckResponse.named("Ping Villain REST Endpoint")
-			.withData("Response", response)
-			.up()
-			.build();
-	}
+  @Override
+  public HealthCheckResponse call() {
+    var response = this.villainsGraftFacade.hello();
+
+    return HealthCheckResponse.named("Ping Villain Graft Facade")
+      .withData("Response", response)
+      .up()
+      .build();
+  }
 }

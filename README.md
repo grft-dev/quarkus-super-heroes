@@ -14,7 +14,7 @@ The base JVM version for all the applications is Java 25.
 
 - [Super Hero Battle UI](ui-super-heroes) - A React application served via [Quarkus Quinoa](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)
 - [Villain REST API](rest-villains) - A classical HTTP microservice with [Hibernate ORM with Panache](https://quarkus.io/guides/hibernate-orm-panache) (active record pattern)
-- [Hero REST API](rest-heroes) - A reactive HTTP microservice with [Hibernate Reactive with Panache](http://quarkus.io/guides/hibernate-reactive-panache) (repository pattern)
+- [Heroes microservice](rest-heroes) - PostgreSQL + **Graftcode** facade ([Hibernate Reactive with Panache](http://quarkus.io/guides/hibernate-reactive-panache)); HTTP for health/metrics only
 - [Narration REST API](rest-narration) - A blocking HTTP microservice integrating with [OpenAI](https://openai.com/) via [LangChain4J](https://docs.quarkiverse.io/quarkus-langchain4j/dev/index.html)
 - [Location gRPC API](grpc-locations) - A [Kotlin](https://quarkus.io/guides/kotlin) [gRPC](https://quarkus.io/guides/grpc) microservice with [Hibernate ORM with Panache](https://quarkus.io/guides/hibernate-orm-panache-kotlin)
 - [Fight REST API](rest-fights) - A reactive HTTP microservice orchestrating fights, using [MongoDB](https://quarkus.io/guides/mongodb-panache), [Kafka](https://quarkus.io/guides/kafka-schema-registry-avro), and [resilience patterns](https://quarkus.io/guides/smallrye-fault-tolerance)

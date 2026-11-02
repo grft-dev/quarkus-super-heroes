@@ -16,4 +16,18 @@ From the `quarkus-super-heroes/ui-super-heroes` directory, simply run `quarkus d
 
 The application uses [Microcks](https://microcks.io) in dev mode by default to provide mock responses from downstream services, so no other services need to be running.
 
+### Graftcode (browser) — heroes, villains, battles
+
+| Facade | WebSocket (full stack compose) |
+|--------|--------------------------------|
+| `HeroesGraftFacade` | `ws://localhost:8090/ws` |
+| `VillainsGraftFacade` | `ws://localhost:8091/ws` |
+| `FightsGraftFacade` | `ws://localhost:8092/ws` |
+
+Random fighters use **heroes + villains** Graft clients (`heroes-graft-service.js`, `villains-graft-service.js`). Fights list, start fight, location, narration, and image use **`fights-graft-service.js`**.
+
+Publish each service with [`deploy/graft-smoke/`](../rest-heroes/deploy/graft-smoke/README.md) (heroes / villains / fights modules). Install the three npm packages from Vision logs; until then `graft-stub*` folders keep CI green.
+
+Env: `HEROES_GRAFT_HOST`, `VILLAINS_GRAFT_HOST`, `FIGHTS_GRAFT_HOST` via `/env.js`.
+
 ![main-ui](images/main-ui.png)

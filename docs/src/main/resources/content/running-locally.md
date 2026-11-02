@@ -41,7 +41,7 @@ Each service can be run standalone with its own Docker Compose file, which start
 
 | Service | Port | Docker Compose Command (JVM) | Docker Compose Command (Native) |
 |---------|:----:|------------------------------|----------------------------------|
-| [Hero REST API]({site.url('/rest-heroes')}) | 8083 | `docker compose -f deploy/docker-compose/java25.yml up --remove-orphans` | `docker compose -f deploy/docker-compose/native.yml up --remove-orphans` |
+| [Heroes (Graftcode)]({site.url('/rest-heroes')}) | 8083 (health) | `docker compose -f deploy/docker-compose/java25.yml up --remove-orphans` | `docker compose -f deploy/docker-compose/native.yml up --remove-orphans` |
 | [Villain REST API]({site.url('/rest-villains')}) | 8084 | `docker compose -f deploy/docker-compose/java25.yml up --remove-orphans` | `docker compose -f deploy/docker-compose/native.yml up --remove-orphans` |
 | [Fight REST API]({site.url('/rest-fights')}) | 8082 | `docker compose -f deploy/docker-compose/java25.yml up --remove-orphans` | `docker compose -f deploy/docker-compose/native.yml up --remove-orphans` |
 | [Narration REST API]({site.url('/rest-narration')}) | 8087 | `docker compose -f deploy/docker-compose/java25.yml up --remove-orphans` | `docker compose -f deploy/docker-compose/native.yml up --remove-orphans` |

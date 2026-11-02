@@ -58,6 +58,7 @@ import io.quarkus.sample.superheroes.fight.ShorterTimeoutsProfile;
 import io.quarkus.sample.superheroes.fight.client.FightToNarrate;
 import io.quarkus.sample.superheroes.fight.client.FightToNarrate.FightToNarrateLocation;
 import io.quarkus.sample.superheroes.fight.client.Hero;
+import io.quarkus.sample.superheroes.fight.client.heroes.HeroGraftStubSupport;
 import io.quarkus.sample.superheroes.fight.client.Villain;
 import io.quarkus.sample.superheroes.location.grpc.HelloReply;
 import io.quarkus.sample.superheroes.location.grpc.HelloRequest;
@@ -81,7 +82,7 @@ import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 /**
  * Integration tests for the application as a whole. Orders tests in an order to faciliate a scenario of interactions
  * <p>
- *   Uses wiremock to stub responses and verify interactions with the hero, villain, and narration services.
+ *   Uses the heroes Graft stub plus WireMock for villains and narration.
  * </p>
  * <p>
  *   Uses Wiremock gRPC to stub responses and verify interactions with the location service
@@ -101,9 +102,6 @@ import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 @TestMethodOrder(OrderAnnotation.class)
 class FightResourceIT {
 	private static final int DEFAULT_ORDER = 0;
-  private static final String HERO_API_BASE_URI = "/api/heroes";
-	private static final String HERO_API_URI = HERO_API_BASE_URI + "/random";
-  private static final String HERO_API_HELLO_URI = HERO_API_BASE_URI + "/hello";
 	private static final String HEROES_TEAM_NAME = "heroes";
 	private static final String DEFAULT_HERO_NAME = "Super Baguette";
 	private static final String DEFAULT_HERO_PICTURE = "super_baguette.png";
@@ -215,6 +213,7 @@ class FightResourceIT {
 
 	@BeforeAll
 	public static void beforeAll() {
+		HeroGraftStubSupport.setRemoteControl(true);
 		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     OBJECT_MAPPER.setDefaultPropertyInclusion(Include.NON_EMPTY);
 
@@ -233,6 +232,7 @@ class FightResourceIT {
 
 	@BeforeEach
 	void beforeEach() {
+		HeroGraftStubSupport.reset();
 		// Reset WireMock
 		this.wireMockServer.resetAll();
     this.wireMockGrpc.resetAll();
@@ -246,6 +246,7 @@ class FightResourceIT {
 
   @AfterAll
   public static void afterAll() {
+    HeroGraftStubSupport.setRemoteControl(false);
     ClassSecurityValidator.setGlobal(originalValidator);
     originalValidator = null;
   }
@@ -272,10 +273,7 @@ class FightResourceIT {
 	void getRandomFightersHeroFallback() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(serverError())
-		);
+		HeroGraftStubSupport.stubRandomHeroServerError();
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -292,11 +290,6 @@ class FightResourceIT {
       .isNotNull()
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(FALLBACK_HERO, DEFAULT_VILLAIN));
-
-		this.wireMockServer.verify(moreThanOrExactly(3),
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -309,13 +302,7 @@ class FightResourceIT {
 	void getRandomFightersHeroDelay() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(
-					okForContentType(APPLICATION_JSON, getDefaultHeroJson())
-						.withFixedDelay(1050)
-				)
-		);
+		HeroGraftStubSupport.stubRandomHeroDelayed(DEFAULT_HERO, 1050);
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -333,10 +320,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(FALLBACK_HERO, DEFAULT_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -349,10 +332,7 @@ class FightResourceIT {
 	void getRandomFightersVillainFallback() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(okForContentType(APPLICATION_JSON, getDefaultHeroJson()))
-		);
+		HeroGraftStubSupport.stubRandomHero(DEFAULT_HERO);
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -370,10 +350,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(DEFAULT_HERO, FALLBACK_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(moreThanOrExactly(3),
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -386,10 +362,7 @@ class FightResourceIT {
 	void getRandomFightersVillainDelay() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(okForContentType(APPLICATION_JSON, getDefaultHeroJson()))
-		);
+		HeroGraftStubSupport.stubRandomHero(DEFAULT_HERO);
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -410,10 +383,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(DEFAULT_HERO, FALLBACK_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -424,10 +393,7 @@ class FightResourceIT {
 	@Test
 	@Order(DEFAULT_ORDER + 1)
 	void getRandomFightersHeroNotFound() {
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(notFound())
-		);
+		HeroGraftStubSupport.stubRandomHeroNotFound();
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -445,10 +411,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(FALLBACK_HERO, DEFAULT_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -461,10 +423,7 @@ class FightResourceIT {
 	void getRandomFightersVillainNotFound() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(okForContentType(APPLICATION_JSON, getDefaultHeroJson()))
-		);
+		HeroGraftStubSupport.stubRandomHero(DEFAULT_HERO);
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -482,10 +441,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(DEFAULT_HERO, FALLBACK_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -498,10 +453,7 @@ class FightResourceIT {
 	void getRandomFightersHeroAndVillainNotFound() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(notFound())
-		);
+		HeroGraftStubSupport.stubRandomHeroNotFound();
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -519,10 +471,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(FALLBACK_HERO, FALLBACK_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -732,10 +680,7 @@ class FightResourceIT {
 	void getRandomFightersHeroAndVillainFallback() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(serverError())
-		);
+		HeroGraftStubSupport.stubRandomHeroServerError();
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -754,11 +699,6 @@ class FightResourceIT {
       .isEqualTo(new Fighters(FALLBACK_HERO, FALLBACK_VILLAIN));
 
 		this.wireMockServer.verify(moreThanOrExactly(3),
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
-
-		this.wireMockServer.verify(moreThanOrExactly(3),
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
 				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
 		);
@@ -769,13 +709,7 @@ class FightResourceIT {
 	void getRandomFightersHeroAndVillainDelay() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(
-					okForContentType(APPLICATION_JSON, getDefaultHeroJson())
-						.withFixedDelay((int) Duration.ofSeconds(ShorterTimeoutsProfile.FIND_RANDOM_OVERRIDDEN_TIMEOUT + 1).toMillis())
-				)
-		);
+		HeroGraftStubSupport.stubRandomHeroDelayed(DEFAULT_HERO, (int) Duration.ofSeconds(ShorterTimeoutsProfile.FIND_RANDOM_OVERRIDDEN_TIMEOUT + 1).toMillis());
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -796,10 +730,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(FALLBACK_HERO, FALLBACK_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -896,10 +826,7 @@ class FightResourceIT {
 	void getRandomFightersAllOk() {
 		resetHeroVillainCircuitBreakersToClosedState();
 
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(okForContentType(APPLICATION_JSON, getDefaultHeroJson()))
-		);
+		HeroGraftStubSupport.stubRandomHero(DEFAULT_HERO);
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -917,10 +844,6 @@ class FightResourceIT {
       .usingRecursiveComparison()
       .isEqualTo(new Fighters(DEFAULT_HERO, DEFAULT_VILLAIN));
 
-		this.wireMockServer.verify(1,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(1,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -931,32 +854,21 @@ class FightResourceIT {
   @Test
   @Order(DEFAULT_ORDER)
   void helloHeroesOk() {
-    this.wireMockServer.stubFor(
-      WireMock.get(urlEqualTo(HERO_API_HELLO_URI))
-        .willReturn(okForContentType(TEXT_PLAIN, "Hello heroes!"))
-    );
+    HeroGraftStubSupport.stubHello("Hello heroes!");
 
     get("/api/fights/hello/heroes")
       .then()
       .statusCode(OK.getStatusCode())
       .contentType(TEXT)
       .body(is("Hello heroes!"));
-
-    this.wireMockServer.verify(1,
-      getRequestedFor(urlEqualTo(HERO_API_HELLO_URI))
-        .withHeader(ACCEPT, containing(TEXT_PLAIN))
-    );
   }
 
   @Test
   @Order(DEFAULT_ORDER + 1)
   void helloHeroesFallback() {
-    this.wireMockServer.stubFor(
-      WireMock.get(urlEqualTo(HERO_API_HELLO_URI))
-        .willReturn(
-          okForContentType(TEXT_PLAIN, "Hello heroes!")
-            .withFixedDelay((int) Duration.ofSeconds(ShorterTimeoutsProfile.HELLO_OVERRIDDEN_TIMEOUT + 1).toMillis())
-        )
+    HeroGraftStubSupport.stubHelloDelayed(
+      "Hello heroes!",
+      (int) Duration.ofSeconds(ShorterTimeoutsProfile.HELLO_OVERRIDDEN_TIMEOUT + 1).toMillis()
     );
 
     get("/api/fights/hello/heroes")
@@ -964,31 +876,18 @@ class FightResourceIT {
       .statusCode(OK.getStatusCode())
       .contentType(TEXT)
       .body(is("Could not invoke the Heroes microservice"));
-
-    this.wireMockServer.verify(1,
-      getRequestedFor(urlEqualTo(HERO_API_HELLO_URI))
-        .withHeader(ACCEPT, containing(TEXT_PLAIN))
-    );
   }
 
   @Test
   @Order(DEFAULT_ORDER + 1)
   void helloHeroesFail() {
-    this.wireMockServer.stubFor(
-      WireMock.get(urlEqualTo(HERO_API_HELLO_URI))
-        .willReturn(serverError())
-    );
+    HeroGraftStubSupport.stubHelloFailure();
 
     get("/api/fights/hello/heroes")
       .then()
       .statusCode(OK.getStatusCode())
       .contentType(TEXT)
       .body(is("Could not invoke the Heroes microservice"));
-
-    this.wireMockServer.verify(1,
-      getRequestedFor(urlEqualTo(HERO_API_HELLO_URI))
-        .withHeader(ACCEPT, containing(TEXT_PLAIN))
-    );
   }
 
   @Test
@@ -1533,10 +1432,7 @@ class FightResourceIT {
 		this.wireMockServer.resetAll();
 
 		// Stub successful requests
-		this.wireMockServer.stubFor(
-			WireMock.get(urlEqualTo(HERO_API_URI))
-				.willReturn(okForContentType(APPLICATION_JSON, getDefaultHeroJson()))
-		);
+		HeroGraftStubSupport.stubRandomHero(DEFAULT_HERO);
 
 		this.wireMockServer.stubFor(
 			WireMock.get(urlEqualTo(VILLAIN_API_URI))
@@ -1559,10 +1455,6 @@ class FightResourceIT {
 			);
 
 		// Verify successful requests
-		this.wireMockServer.verify(9,
-			getRequestedFor(urlEqualTo(HERO_API_URI))
-				.withHeader(ACCEPT, equalTo(APPLICATION_JSON))
-		);
 
 		this.wireMockServer.verify(9,
 			getRequestedFor(urlEqualTo(VILLAIN_API_URI))
@@ -1749,7 +1641,4 @@ class FightResourceIT {
 		return writeAsJson(DEFAULT_VILLAIN);
 	}
 
-	private static String getDefaultHeroJson() {
-		return writeAsJson(DEFAULT_HERO);
-	}
 }

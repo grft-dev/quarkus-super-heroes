@@ -481,11 +481,11 @@ class FightServiceTests extends FightServiceTestsBase {
 			.isNotNull()
 			.extracting(
 				ConstraintViolation::getInvalidValue,
-				ConstraintViolation::getMessage
+				ConstraintViolation::getMessageTemplate
 			)
 			.containsExactly(
 				null,
-				"must not be null"
+				"{jakarta.validation.constraints.NotNull.message}"
 			);
 
 		verify(this.fightService, never()).determineWinner(any(FightRequest.class));
@@ -519,11 +519,11 @@ class FightServiceTests extends FightServiceTestsBase {
 			.isNotNull()
 			.extracting(
 				ConstraintViolation::getInvalidValue,
-				ConstraintViolation::getMessage
+				ConstraintViolation::getMessageTemplate
 			)
 			.containsExactly(
 				null,
-				"must not be null"
+				"{jakarta.validation.constraints.NotNull.message}"
 			);
 
 		verify(this.fightService, never()).determineWinner(any(FightRequest.class));
@@ -817,6 +817,27 @@ class FightServiceTests extends FightServiceTestsBase {
 		assertThat(this.fightService.shouldVillainWin(fightRequest))
 			.isFalse();
 	}
+
+  @Test
+  void helloHeroesSuccess() {
+    when(this.heroClient.helloHeroes())
+      .thenReturn(Uni.createFrom().item(DEFAULT_HELLO_HERO_RESPONSE));
+
+    var message = this.fightService.helloHeroes()
+      .subscribe().withSubscriber(UniAssertSubscriber.create())
+      .assertSubscribed()
+      .awaitItem(Duration.ofSeconds(5))
+      .getItem();
+
+    assertThat(message)
+      .isNotNull()
+      .isEqualTo(DEFAULT_HELLO_HERO_RESPONSE);
+
+    verify(this.heroClient).helloHeroes();
+    verify(this.fightService).helloHeroes();
+    verifyNoMoreInteractions(this.heroClient);
+    verifyNoInteractions(this.villainClient);
+  }
 
   @Test
   void helloHeroesFallback() {
